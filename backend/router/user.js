@@ -71,6 +71,10 @@ userRouter.use(express.json());//! important to parse the body of the request
                 token
             })
             console.log("user._id"+user._id.toString())
+            
+//! imp: storing token to localstorage
+            localStorage.setItem("token", token);
+
         } else {
             res.status(403).json({
                 message: "Incorrect creds"

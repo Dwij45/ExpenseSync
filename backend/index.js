@@ -14,9 +14,16 @@ app.use('/user',userRouter);
 app.use('/dashboard',expenseRouter)
 
 async function main(){
- 
-await mongoose.connect(process.env.MONGO_URI)
-    app.listen(3000)
-    console.log("listining on port 3000")
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log("Connected to MongoDB successfully");
+        
+        app.listen(3000, () => {
+            console.log("Server listening on port 3000");
+        });
+    } catch (error) {
+        console.error("Failed to connect to MongoDB:", error);
+        // process.exit(1);
+    }
 }
 main();

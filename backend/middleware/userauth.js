@@ -1,5 +1,5 @@
 const jwt =require("jsonwebtoken");
-const {userPassword} = process.env.usersecretkey
+const userPassword = process.env.usersecretkey
 
 function userMiddleware(req,res,next){
     const token=req.headers.token;
