@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -9,6 +10,17 @@ const {expenseRouter}=require('./router/dashboard')
 
 const app = express();
 const mongoURI = process.env.MONGO_URI;
+const cors = require('cors');
+
+app.use(cors({
+//   origin: 'http://127.0.0.1:3000', // or whatever your frontend port is
+//   credentials: true, // needed if using cookies or Authorization header
+//   allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Serve static files from public directory
+// !
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/user',userRouter);
 app.use('/dashboard',expenseRouter)

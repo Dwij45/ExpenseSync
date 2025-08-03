@@ -3,16 +3,21 @@ const userPassword = process.env.usersecretkey
 
 function userMiddleware(req,res,next){
     const token=req.headers.token;
-    const decoded= jwt.verify(token,userPassword);
-
-    if(decoded){
-        req.userId= decoded.id
-        next();
+    
+    if (!token) {
+        return res.status(401).json({
+            message: "No token provided"
+        });
     }
-    else{
+    
+    try {
+        const decoded = jwt.verify(token, userPassword);
+        req.userId = decoded.id;
+        next();
+    } catch (error) {
         res.status(403).json({
-            message:"you are not signed in"
-        })
+            message: "Invalid token"
+        });
     }
 }
 

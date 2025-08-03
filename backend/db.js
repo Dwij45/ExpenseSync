@@ -11,11 +11,10 @@ const UserSchema=new Schema({
 })
 
 const ExpenseSchema = new mongoose.Schema({
-//   userId: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: 'User',           // if you have a users collection
-//     required: false
-//   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
   amount: {
     type: Number,
     required: true,
