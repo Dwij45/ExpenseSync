@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Expense Chart</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
     canvas {
       max-width: 600px;
@@ -54,6 +55,7 @@ table, th, td {
   <h2 style="text-align:center;">Expense Category Summary</h2>
   <button onclick="loadChart()">Click me to get graph</button>
   <button onclick="updateChart()">Find endpoint</button>
+  <button onclick="getall()">render all expanses</button>
   <canvas id="expenseChart"></canvas>
   <!-- $$ -->
 <table>
@@ -65,6 +67,21 @@ table, th, td {
     </thead>
     <tbody id="summaryTable"></tbody>
   </table>
+<!-- % -->
+    <table id="expenseTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Amount</th>
+      <th>Category</th>
+      <th>Comment</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="expenseTableBody"></tbody>
+</table>
+<!-- % -->
+
 <h2>Find by Category</h2>
   <!-- <input type="text" id="searchCategory" placeholder="Enter category" /> -->
    <select id="searchCategory">
@@ -73,36 +90,152 @@ table, th, td {
   <option value="Transportation">Transportation</option>
   <option value="Shopping">Shopping</option>
   <option value="Healthcare">Healthcare</option>
-  <option value="Healthcare">Healthcare</option>
+  <option value="Entertainment">Entertainment</option>
+  <option value="Utilities">Utilities</option>
+  <option value="Housing">Housing</option>
+  <option value="Other">Other</option>
+  <option value="All">All</option>
 </select>
   <button onclick="updateChart()">log</button>
   <!-- <button onclick="searchByCategory()">Search</button> -->
   <ul id="categoryResults"></ul>
+        <h2>Expense Summary</h2>
+                <div class="date-filter">
+                    <label for="startDate">From:</label>
+                    <input type="date" id="startDate">
+                    <label for="endDate">To:</label>
+                    <input type="date" id="endDate">
+                    <button id="filterBtn">Filter</button>
+                </div>
+<button onclick="generatePdf()">Download PDF</button>
+<button onclick="generateCsv()">Download CSV</button>
 <!-- $$ -->
   <script>
-    function logcategory(){
-      const val = document.getElementById('searchCategory').value;
-    console.log(val);
+
+  function renderExpenseTable(expenses) {
+  const tbody = document.getElementById('expenseTableBody');
+  tbody.innerHTML = ''; // Clear old rows
+
+  if (expenses.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No expenses found</td></tr>`;
+    return;
+  }
+
+  expenses.forEach(exp => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${new Date(exp.date).toLocaleDateString()}</td>
+      <td>₹${exp.amount.toFixed(2)}</td>
+      <td>${exp.category}</td>
+      <td>${exp.comment || '-'}</td>
+      <td>
+        <button class="edit-btn" data-id="${exp._id}">Edit</button>
+        <button class="delete-btn" data-id="${exp._id}">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function getall(){
+  const response=await fetch('http://localhost:3000/dashboard/get-expanses',{
+    method:'GET',
+    headers:{
+       'Content-Type': 'application/json',
+        'token': token // Using 'token' header as per your middleware 
     }
+  })
+  const expanses=await response.json();
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        console.log(expanses.length)
+    renderExpenseTable(expanses);
+}
+
+async function getselected(){
+  const response=await fetch('http://localhost:3000/dashboard/get-expanses',{
+    method:'GET',
+    headers:{
+       'Content-Type': 'application/json',
+        'token': token // Using 'token' header as per your middleware 
+    }
+  })
+  const expanses=await response.json();
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        console.log(expanses.length)
+    renderExpenseTable(expanses);
+}
+
+  const filterBtn = document.getElementById('filterBtn');
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+  endDateInput.valueAsDate = new Date(); // Set to today by default
+
+  filterBtn.addEventListener('click', async () => {
+    const start = startDateInput.value;
+    const end = endDateInput.value;
+    console.log("start", start);
+    console.log("end", end);
+    const token = localStorage.getItem('token'); // Adjust as per your auth logic
+
+    if (!start || !end) {
+      alert("Please select both start and end dates.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/dashboard/get?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token // Using 'token' header as per your middleware
+        }
+      });
+
+      const filteredExpenses = await response.json();
+      console.log(filteredExpenses); // Or render in UI
+
+      renderExpenseTable(filteredExpenses);
+
+    } catch (error) {
+      console.error("Error fetching filtered expenses:", error);
+    }
+  });
+
+
     async function loadChart() {
       try {
         // Get token from localStorage
+        // const token = localStorage.getItem('token'); 
         const token = localStorage.getItem('token'); 
         
-        const response = await fetch('http://localhost:3000/dashboard/category-summary', {
-          method: 'GET',
-          headers: {
+        // const response = await fetch('http://localhost:3000/dashboard/category-summary', {
+        //   method: 'GET',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'token': token // Using 'token' header as per your middleware
+        //   }
+        // });
+
+        const response=await axios.get('http://localhost:3000/dashboard/category-summary',{
+          headers:{
             'Content-Type': 'application/json',
             'token': token // Using 'token' header as per your middleware
           }
+        }).then((response) => {
+          if (!response.ok) {
+            console.log("Error in response"+response.Error);
+          }
+          return response.data;
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
+ 
+        // const data = await response.json();
+        const data = response;
         console.log(data)
+        console.log(data.categories)
         const categories = data.map(item => item.category);
         const totals = data.map(item => item.total);
 
@@ -189,6 +322,47 @@ table, th, td {
 
         }
     }
-  </script>
+
+  async function generatePdf(){
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/download/pdf', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token // Using 'token' header as per your middleware)
+    }
+  })
+  const blob = await response.blob();
+  const url=window.URL.createObjectURL(blob);
+  const a= document.createElement('a');
+  a.href=url;
+  a.download='expenses.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+async function generateCsv()
+{
+  const token=localStorage.getItem('token');
+  const response=await fetch('http://localhost:3000/download/csv',{
+    method: 'GET',
+    headers:{
+      'Content-type':'application/csv',
+      'token':token
+    }
+  })
+
+
+  const blob =await response.blob();
+  const url=window.URL.createObjectURL(blob)
+const a=document.createElement("a");
+ a.href=url;
+ a.download='expense.csv';
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+} 
+
+</script>
 </body>
 </html>

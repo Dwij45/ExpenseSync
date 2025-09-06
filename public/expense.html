@@ -42,26 +42,27 @@ table, th, td {
 <body>
   <h1>Add Expense</h1>
   <form id="expenseForm">
-    <input type="number" placeholder="Amount" id="amount" required />
-    <input type="text" placeholder="Category" id="category" required />
+    <input type="number" placeholder="Amount" id="amount"  />
+    <input type="text" placeholder="Category" id="category"  />
     <!-- $$ -->
-     <h2>Find by Category</h2>
-<select id="searchCategory">
-  <option value="">-- Select Category --</option>
-  <option value="Food">Food</option>
-  <option value="Transport">Transport</option>
+    <ul id="categoryResults"></ul>
+    
+        <!-- $$ -->
+        <input type="text" placeholder="Comment" id="comment" />
+        <input type="date" id="date"  />
+        <button type="submit">Add Expense</button>
+      </form>
+      <form  id="find-form">
+        <h2>Find by Category</h2>
+        <select id="searchCategory">
+          <option value="">-- Select Category --</option>
+          <option value="Food">Food</option>
+          <option value="Transport">Transport</option>
   <option value="Groceries">Groceries</option>
   <option value="Entertainment">Entertainment</option>
 </select>
-<button onclick="searchByCategory()">Search</button>
+<button >Search</button>
 
-<ul id="categoryResults"></ul>
-
-    <!-- $$ -->
-    <input type="text" placeholder="Comment" id="comment" />
-    <input type="date" id="date" required />
-    <button type="submit">Add Expense</button>
-  </form>
 
   <!-- <h2>Find by Category</h2>
   <input type="text" id="searchCategory" placeholder="Enter category" />
@@ -79,9 +80,21 @@ table, th, td {
     </thead>
     <tbody id="summaryTable"></tbody>
   </table>
-  
+    <h1>Add Income</h1>
+  <form id="incomeForm">
+    <input type="number" placeholder="Amount" id="incomeAmount"  />
+    <input type="text" placeholder="Category" id="incomeCategory"  />
+    <!-- salary,business,investment,gift,other -->
+    <!-- $$ -->
+    <ul id="categoryResults"></ul>
+    
+        <!-- $$ -->
+        <input type="text" placeholder="Comment" id="incomeComment" />
+        <input type="date" id="incomeDate"  />
+        <button type="submit">Add Income</button>
+      </form>
   <script>
-    const BASE_URL = 'http://localhost:3000'; // change if needed
+    const BASE_URL = 'http://localhost:3000/dashboard'; // change if needed
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('expenseForm');
@@ -98,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'token': token
         },
         body: JSON.stringify({ amount, category, comment, date })
       });
@@ -110,16 +123,47 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+const form = document.getElementById('incomeForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const amount = document.getElementById('incomeAmount').value;
+      const category = document.getElementById('incomeCategory').value;
+      const comment = document.getElementById('incomeComment').value;
+      const date = document.getElementById('incomeDate').value;
+
+      const token = localStorage.getItem('token');
+      const res = await fetch(BASE_URL + '/income', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify({ amount, category, comment, date })
+      });
+
+      const data = await res.json();
+      alert(data.message || 'Expense added!');
+      form.reset();
+    });
+  }
+
+
+document.getElementById('find-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  searchByCategory();
+});
+
 // Search expenses by category
 async function searchByCategory() {
   const category = document.getElementById('searchCategory').value;
   const token = localStorage.getItem('token');
 
-  const res = await fetch(BASE_URL + '/find', {
+  const res = await fetch(BASE_URL + `/find?category=${category}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'token': token
     },
     // body: JSON.stringify({ category })
   });
@@ -143,7 +187,8 @@ async function loadSummary() {
   const token = localStorage.getItem('token');
   const res = await fetch(BASE_URL + '/category-summary', {
     headers: {
-      'Authorization': `Bearer ${token}`
+      'Content-Type': 'application/json',
+      'token': token
     }
   });
 

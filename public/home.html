@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpenseSync - Smart Financial Tracking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="home.css">
+    
+</head>
+<body data-theme="light">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                ExpenseSync
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#testimonials">Reviews</a>
+                <a href="#pricing">Pricing</a>
+                <a href="/frontend/dashboard.html">Dashboard</a>
+                <button id="theme-toggle" class="theme-toggle">
+                    <i class="ri-moon-line"></i>
+                </button>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-login">Login</button>
+                <button class="btn btn-signup">Sign Up</button>
+            </div>
+        </div>
+    </nav>
+    
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Track Your Finances <span class="highlight">Effortlessly</span></h1>
+            <p>ExpenseSync helps you manage your money with AI-powered tracking, UPI integration, portfolio analytics, and voice-enabled expense recording to give you complete control of your financial life.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="navtodashboard()">Get Started Free</button>
+                <button class="btn btn-secondary">View Demo</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="expenseChart" style="align-content: center;"></canvas>
+        </div>
+    </section>
+    
+    <section class="stats">
+        <div class="stats-container">
+            <div class="stats-header">
+                <h2>Trusted by Thousands</h2>
+                <p>Join the community of users taking control of their finances</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>50K+</h3>
+                    <p>Active Users</p>
+                </div>
+                <div class="stat-card">
+                    <h3>₹10Cr+</h3>
+                    <p>Expenses Tracked</p>
+                </div>
+                <div class="stat-card">
+                    <h3>98%</h3>
+                    <p>User Satisfaction</p>
+                </div>
+                <div class="stat-card">
+                    <h3>30%</h3>
+                    <p>Average Savings</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="features" id="features">
+        <h2>Why Choose ExpenseSync?</h2>
+        <p class="features-subtitle">Our platform combines the latest financial technology with an intuitive user interface to help you track, analyze, and optimize your spending habits.</p>
+        <div class="features-grid">
+           
+            <div class="feature-card">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                <h3>Voice Assistant</h3>
+                <p>Record cash expenses hands-free with our advanced voice recognition system for on-the-go tracking.</p>
+            </div>
+            <div class="feature-card">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <h3>Detailed Analytics</h3>
+                <p>Visualize your spending with interactive charts and AI-powered insights to optimize your budget.</p>
+            </div>
+            <div class="feature-card">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <h3>Smart Budgeting</h3>
+                <p>Set personalized budgets and receive alerts when you're close to exceeding them.</p>
+            </div>      
+        </div>
+    </section>
+    
+    <!-- Continue from your last line -->
+    
+    <section class="how-it-works" id="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps-grid">
+            <div class="step">
+                <span class="step-number">1</span>
+                <h3>Sign Up</h3>
+                <p>Create your free account to get started instantly.</p>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                <h3>Connect UPI & Wallets</h3>
+                <p>Link your Google Pay, PhonePe, and Paytm to sync your expenses automatically.</p>
+            </div>
+            <div class="step">
+                <span class="step-number">3</span>
+                <h3>Track & Optimize</h3>
+                <p>Get AI-powered insights and budget suggestions to improve your savings.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section class="testimonials" id="testimonials">
+        <h2>What Our Users Say</h2>
+        <div class="testimonial-cards">
+            <div class="testimonial-card">
+                <p>“ExpenseSync helped me cut down 20% of my unnecessary spending within a month!”</p>
+            <h4>- Riya Mehta</h4>
+        </div>
+        <div class="testimonial-card">
+            <p>“The voice assistant and UPI sync are genius features. Makes my life so much easier.”</p>
+            <h4>- Arjun Shah</h4>
+        </div>
+        <div class="testimonial-card">
+            <p>“The analytics are beautifully designed and very helpful for financial planning.”</p>
+            <h4>- Devika Joshi</h4>
+        </div>
+    </div>
+</section>
+
+<section class="pricing" id="pricing">
+    <h2>Pricing Plans</h2>
+    <p class="pricing-subtitle">Choose a plan that fits your financial goals. Start for free — upgrade anytime.</p>
+    <div class="pricing-cards">
+        <div class="pricing-card">
+            <h3>Free</h3>
+            <p class="price">₹0/month</p>
+            <ul>
+                <li>UPI Sync</li>
+                <li>Manual Tracking</li>
+                <li>Basic Reports</li>
+            </ul>
+            <button class="btn btn-secondary">Get Started</button>
+        </div>
+        <div class="pricing-card featured">
+            <h3>Pro</h3>
+            <p class="price">₹199/month</p>
+            <ul>
+                <li>All Free Features</li>
+                <li>Voice Assistant</li>
+                <li>Detailed Analytics</li>
+                <li>Smart Budget Alerts</li>
+            </ul>
+            <button class="btn btn-primary">Start Free Trial</button>
+        </div>
+        <div class="pricing-card">
+            <h3>Enterprise</h3>
+            <p class="price">Custom</p>
+            <ul>
+                <li>Team Accounts</li>
+                <li>Bulk UPI Sync</li>
+                <li>Priority Support</li>
+            </ul>
+            <button class="btn btn-secondary">Contact Sales</button>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-logo">
+            <h3>ExpenseSync</h3>
+            <p>Your trusted financial partner.</p>
+        </div>
+        <div class="footer-links">
+            <div>
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#testimonials">Reviews</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Use</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-socials">
+            <h4>Follow Us</h4>
+            <div class="social-icons">
+                <a href="#"><i class="ri-facebook-line"></i></a>
+                <a href="#"><i class="ri-instagram-line"></i></a>
+                <a href="#"><i class="ri-twitter-line"></i></a>
+                <a href="#"><i class="ri-linkedin-line"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2025 ExpenseSync. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="/public/script.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Food', 'Transport', 'Utilities', 'Entertainment', 'Investments'],
+                    datasets: [{
+                        data: [30, 20, 15, 10, 25],
+                        backgroundColor: [
+                            '#028090',
+                            '#EAB054',
+                            '#575757',
+                            '#2A2A2A',
+                            '#028090']
+                        }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Expense Breakdown'
+                        }
+                    }
+                }
+            })
+        });
+        function navtodashboard() {
+            window.location.href = "/frontend/history2.html"; // Adjust as needed
+        }
+        
+        document.getElementById('theme-toggle').addEventListener('click', function () {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            this.innerHTML = newTheme === 'dark' ? '<i class="ri-sun-line"></i>' : '<i class="ri-moon-line"></i>';
+        });
+        </script>
+        <!-- <script src="/finanace tracker/frontend/script.js"></script> -->
+</body>
+</html>

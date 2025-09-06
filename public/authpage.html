@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpenseFlow - Track Your Finances</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #028090;
+            --secondary: #EAB054;
+            --dark-primary: #8B5CF6;
+            --dark-secondary: #C4B5FD;
+            --light-bg: #f8f9fa;
+            --dark-bg: #1f2937;
+            --light-text: #333;
+            --dark-text: #f3f4f6;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+        body {
+            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: var(--primary);
+            color: white;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode .navbar {
+            background-color: var(--dark-primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo i {
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 1.5rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--secondary);
+        }
+
+        body.dark-mode .nav-links a:hover {
+            color: var(--dark-secondary);
+        }
+
+        .mode-toggle {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 4rem);
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+            transition: background 0.3s;
+        }
+
+        body.dark-mode .left-panel {
+            /* background: linear-gradient(135deg, var(--dark-primary), var(--dark-secondary));
+            color: #333 */
+background: linear-gradient(135deg, var(--dark-primary), var(--dark-secondary));
+    color: var(--dark-text); /* Use the dark mode text variable */
+        }
+
+        .left-panel h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .left-panel p {
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .features {
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .feature i {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .form-container {
+            width: 400px;
+            max-width: 100%;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--box-shadow);
+            background-color: white;
+            transition: background-color 0.3s, transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode .form-container {
+            background-color: #374151;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-header h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        body.dark-mode .form-header h2 {
+            color: var(--dark-secondary);
+        }
+
+        .switch-form {
+            display: flex;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            border: 1px solid #ddd;
+        }
+
+        body.dark-mode .switch-form {
+            border-color: #4b5563;
+        }
+
+        .switch-btn {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode .switch-btn {
+            background-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .switch-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        body.dark-mode .switch-btn.active {
+            background-color: var(--dark-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        body.dark-mode .form-group label {
+            color: #d1d5db;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        body.dark-mode .input-with-icon input {
+            background-color: #4b5563;
+            border-color: #6b7280;
+            color: #e5e7eb;
+        }
+
+        .input-with-icon input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(2, 128, 144, 0.2);
+        }
+
+        body.dark-mode .input-with-icon input:focus {
+            border-color: var(--dark-primary);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        body.dark-mode .input-with-icon i {
+            color: #9ca3af;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 1.2rem;
+        }
+
+        .forgot-password a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .forgot-password a {
+            color: var(--dark-secondary);
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode .submit-btn {
+            background-color: var(--dark-primary);
+        }
+
+        .submit-btn:hover {
+            background-color: #026d7a;
+        }
+
+        body.dark-mode .submit-btn:hover {
+            background-color: #7c3aed;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .submit-btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .social-login {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .social-login p {
+            position: relative;
+            margin-bottom: 1rem;
+            color: #777;
+        }
+
+        body.dark-mode .social-login p {
+            color: #9ca3af;
+        }
+
+        .social-login p::before,
+        .social-login p::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background-color: #ddd;
+        }
+
+        body.dark-mode .social-login p::before,
+        body.dark-mode .social-login p::after {
+            background-color: #4b5563;
+        }
+
+        .social-login p::before {
+            left: 0;
+        }
+
+        .social-login p::after {
+            right: 0;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .social-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f1f1f1;
+            color: #555;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        body.dark-mode .social-icon {
+            background-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .social-icon:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-icon.google:hover {
+            background-color: #DB4437;
+            color: white;
+        }
+
+        .social-icon.facebook:hover {
+            background-color: #4267B2;
+            color: white;
+        }
+
+        .social-icon.twitter:hover {
+            background-color: #1DA1F2;
+            color: white;
+        }
+
+        .form {
+            display: none;
+        }
+
+        .form.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Floating labels animation */
+        .floating-input {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .floating-input input {
+            width: 100%;
+            padding: 10px 15px;
+            font-size: 16px;
+            color: #333;
+            background-color: transparent;
+            border: none;
+            border-bottom: 2px solid #ddd;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .floating-input input {
+            color: #e5e7eb;
+            border-bottom-color: #6b7280;
+        }
+
+        .floating-input label {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 16px;
+            color: #999;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .floating-input label {
+            color: #9ca3af;
+        }
+
+        .floating-input input:focus,
+        .floating-input input:not(:placeholder-shown) {
+            border-bottom-color: var(--primary);
+        }
+
+        body.dark-mode .floating-input input:focus,
+        body.dark-mode .floating-input input:not(:placeholder-shown) {
+            border-bottom-color: var(--dark-primary);
+        }
+
+        .floating-input input:focus + label,
+        .floating-input input:not(:placeholder-shown) + label {
+            top: -12px;
+            left: 5px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        body.dark-mode .floating-input input:focus + label,
+        body.dark-mode .floating-input input:not(:placeholder-shown) + label {
+            color: var(--dark-secondary);
+        }
+
+        /* Hamburger menu for mobile */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 25px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .menu-toggle span {
+            height: 3px;
+            width: 100%;
+            background-color: white;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .left-panel {
+                clip-path: none;
+                padding: 3rem 1rem;
+            }
+
+            .right-panel {
+                padding: 2rem 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: var(--primary);
+                padding: 1rem 0;
+                box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+                height: 0;
+                overflow: hidden;
+                transition: height 0.3s ease;
+            }
+
+            body.dark-mode .nav-links {
+                background-color: var(--dark-primary);
+            }
+
+            .nav-links.show {
+                height: auto;
+            }
+
+            .nav-links li {
+                margin: 0;
+                text-align: center;
+                padding: 0.5rem 0;
+            }
+
+            .container {
+                overflow: auto;
+            }
+        }
+
+        /* Animation for background */
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .bg-animation span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(234, 176, 84, 0.1);
+            border-radius: 50%;
+            animation: move 5s linear infinite;
+        }
+
+        body.dark-mode .bg-animation span {
+            background: rgba(196, 181, 253, 0.1);
+        }
+
+        .bg-animation span:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            width: 60px;
+            height: 60px;
+            animation-delay: 0s;
+            animation-duration: 15s;
+        }
+
+        .bg-animation span:nth-child(2) {
+            top: 60%;
+            left: 20%;
+            width: 40px;
+            height: 40px;
+            animation-delay: 1s;
+            animation-duration: 11s;
+        }
+
+        .bg-animation span:nth-child(3) {
+            top: 30%;
+            left: 60%;
+            width: 70px;
+            height: 70px;
+            animation-delay: 2s;
+            animation-duration: 13s;
+        }
+
+        .bg-animation span:nth-child(4) {
+            top: 70%;
+            left: 70%;
+            width: 50px;
+            height: 50px;
+            animation-delay: 3s;
+            animation-duration: 17s;
+        }
+
+        @keyframes move {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(300px, -300px) rotate(360deg) scale(3);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-wallet"></i>
+            <span>ExpenseFlow</span>
+        </div>
+        <div class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/frontend\darkp.html">Home</a></li>
+            <li><a href="#"></a></li>
+            <li><a href="#"></a></li>
+            <li><button class="mode-toggle" id="modeToggle">
+                <i class="fas fa-moon"></i>
+            </button></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="left-panel">
+            <h1>ExpenseFlow</h1>
+            <p>Track expenses, set budgets, and take control of your financial life with our intuitive expense tracker.</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <h3>Track Expenses</h3>
+                        <p>Easily log and categorize your daily expenses</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-piggy-bank"></i>
+                    <div>
+                        <h3>Budget Planning</h3>
+                        <p>Set budgets and get notifications when you're close to limits</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <div>
+                        <h3>Financial Reports</h3>
+                        <p>Generate detailed reports to analyze your spending habits</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="form-container">
+                <div class="bg-animation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                
+                <div class="form-header">
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to continue to your account</p>
+                </div>
+                
+                <div class="switch-form">
+                    <div class="switch-btn active" id="loginBtn">Sign In</div>
+                    <div class="switch-btn" id="registerBtn">Sign Up</div>
+                </div>
+                
+                <form class="form active" id="loginForm">
+                    <div class="floating-input">
+                        <input type="email" id="email" placeholder=" " required>
+                        <label for="email">Email Address</label>
+                    </div>
+                    
+                    <div class="floating-input">
+                        <input type="password" id="password" placeholder=" " required>
+                        <label for="password">Password</label>
+                    </div>
+                    
+                    <div class="forgot-password">
+                        <a href="#">Forgot Password?</a>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Sign In</button>
+                    
+                    <div class="social-login">
+                        <p>Or continue with</p>
+                        <div class="social-icons">
+                            <a href="#" class="social-icon google"><i class="fab fa-google"></i></a>
+                            <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-icon twitter"><i class="fab fa-twitter"></i></a>
+                        </div>
+                    </div>
+                </form>
+                
+                <form class="form" id="registerForm">
+                    <div class="floating-input">
+                        <input type="text" id="fullName" placeholder=" " required>
+                        <label for="fullName">Full Name</label>
+                    </div>
+                    
+                    <div class="floating-input">
+                        <input type="email" id="regEmail" placeholder=" " required>
+                        <label for="regEmail">Email Address</label>
+                    </div>
+                    
+                    <div class="floating-input">
+                        <input type="password" id="regPassword" placeholder=" " required>
+                        <label for="regPassword">Password</label>
+                    </div>
+                    
+                    <div class="floating-input">
+                        <input type="password" id="confirmPassword" placeholder=" " required>
+                        <label for="confirmPassword">Confirm Password</label>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Create Account</button>
+                    
+                    <div class="social-login">
+                        <p>Or sign up with</p>
+                        <div class="social-icons">
+                            <a href="#" class="social-icon google"><i class="fab fa-google"></i></a>
+                            <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-icon twitter"><i class="fab fa-twitter"></i></a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+            //signin request to backend
+            document.getElementById('loginForm').addEventListener('submit',async (e)=>{
+                e.preventDefault();
+                const email=document.getElementById('email').value;
+                const password =document.getElementById('password').value;
+
+                const res= await axios.post('http://localhost:3000/user/signin',{
+                    email,  
+                    password
+                }).then((res)=>{
+                    localStorage.setItem("token",res.data)
+                    console.log("login sucessful");
+
+                    setTimeout(()=>{
+                        window.location.href='home.html';
+                    },1000);
+                }).catch((err)=>{
+                    alert(err || 'Login failed');
+                })
+            })
+
+            // Register request to backend
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const fullName = document.getElementById('fullName').value;
+                const email = document.getElementById('regEmail').value;
+                const password = document.getElementById('regPassword').value;
+
+                try {
+                    const res = await axios.post('http://localhost:3000/user/signup', {
+                        fullName,
+                        email,
+                        password
+                    });
+                    localStorage.setItem("token", res.data);
+                    console.log("Registration successful");
+
+                    setTimeout(() => {
+                        window.location.href = 'public/home.html';
+                    }, 1000);
+                } catch (err) {
+                    alert(err || 'Registration failed');
+                }
+            });
+
+        // Toggle between login and register forms
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const formHeader = document.querySelector('.form-header');
+        
+        loginBtn.addEventListener('click', () => {
+            loginBtn.classList.add('active');
+            registerBtn.classList.remove('active');
+            loginForm.classList.add('active');
+            registerForm.classList.remove('active');
+            formHeader.querySelector('h2').textContent = 'Welcome Back';
+            formHeader.querySelector('p').textContent = 'Sign in to continue to your account';
+        });
+        
+        registerBtn.addEventListener('click', () => {
+            registerBtn.classList.add('active');
+            loginBtn.classList.remove('active');
+            registerForm.classList.add('active');
+            loginForm.classList.remove('active');
+            formHeader.querySelector('h2').textContent = 'Create Account';
+            formHeader.querySelector('p').textContent = 'Sign up to get started with ExpenseFlow';
+        });
+        
+        // Dark mode toggle
+        const modeToggle = document.getElementById('modeToggle');
+        const body = document.body;
+        
+        modeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            
+            // Toggle icon
+            const icon = modeToggle.querySelector('i');
+            if (body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+        
+        // Mobile menu toggle
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('show');
+        });
+        
+        // Form submission prevention (for demo)
+        // document.querySelectorAll('form').forEach(form => {
+        //     form.addEventListener('submit', (e) => {
+        //         e.preventDefault();
+        //         alert('This is a demo. Form submission would happen here in a real application.');
+        //     });
+        // });
+
+    </script>
+</body>
+</html>

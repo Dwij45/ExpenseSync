@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Expense Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,33 +62,47 @@
             const password = document.getElementById('password').value;
             const messageDiv = document.getElementById('message');
             
-            try {
-                const response = await fetch('http://localhost:3000/user/signin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
+            // try {
+            //     const response = await fetch('http://localhost:3000/user/signin', {
+            //         method: 'POST',
+            //         headers: {
+            //             'Content-Type': 'application/json'
+            //         },
+            //         body: JSON.stringify({ email, password })
+            //     });
                 
-                const data = await response.json();
-                console.log(data)
-                if (response.ok && data.token) {
-                    // Store token in localStorage
-                    localStorage.setItem('token', data.token);
+            //     const data = await response.json();
+            //     console.log(data)
+            //     if (response.ok && data.token) {
+            //         // Store token in localStorage
+            //         localStorage.setItem('token', data.token);
                     
-                    messageDiv.innerHTML = '<div class="success">Login successful! Redirecting...</div>';
+            //         messageDiv.innerHTML = '<div class="success">Login successful! Redirecting...</div>';
                     
-                    // Redirect to dashboard or expense page
-                    setTimeout(() => {
-                        window.location.href = 'index.html'; // Your expense chart page
-                    }, 1000);
-                } else {
-                    messageDiv.innerHTML = '<div class="error">' + (data.message || 'Login failed') + '</div>';
-                }
-            } catch (error) {
-                messageDiv.innerHTML = '<div class="error">Network error: ' + error.message + '</div>';
-            }
+            //         // Redirect to dashboard or expense page
+            //         setTimeout(() => {
+            //             window.location.href = 'index.html'; // Your expense chart page
+            //         }, 1000);
+            //     } else {
+            //         messageDiv.innerHTML = '<div class="error">' + (data.message || 'Login failed') + '</div>';
+            //     }
+            // } catch (error) {
+            //     messageDiv.innerHTML = '<div class="error">Network error: ' + error.message + '</div>';
+            // }
+            const response = await axios.post('http://localhost:3000/user/signin', {
+                email,
+                password
+            }).then((response) => {
+                console.log("HELLI"+response);
+               localStorage.setItem("token",response.data.token);
+                messageDiv.innerHTML = '<div class="success">Login successful! Redirecting...</div>';
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // Your expense chart page
+                }, 1000);
+        }).catch((err)=>{
+             messageDiv.innerHTML = '<div class="error">' + (err || 'Login failed') + '</div>';
+            console.log(err);
+        });
         });
     </script>
 </body>
