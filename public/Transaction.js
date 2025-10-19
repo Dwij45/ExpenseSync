@@ -1,21 +1,32 @@
-    document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
         // --- STATE ---
 
-const res=await fetch('http://localhost:3000/dashboard/get-expanses',{
+const expenseRes=await fetch('http://localhost:3000/dashboard/get-expanses',{
     method:'GET',
     headers:{
         'Content-Type': 'application/json',
         'token': localStorage.getItem('token')
     }
 })
-let transactions = await res.json();
-        //  transactions = JSON.parse(localStorage.getItem('transactions')) || [
-        //     { id: 1, description: 'Grocery Shopping', amount: 2550.75, type: 'expense', category: 'Food', date: '2025-09-01' },
-        //     { id: 2, description: 'September Salary', amount: 85000.00, type: 'income', category: 'Salary', date: '2025-09-01' },
-        //     { id: 3, description: 'Electric Bill', amount: 1200.00, type: 'expense', category: 'Bills', date: '2025-09-02' },
-        //     { id: 4, description: 'Uber to work', amount: 250.50, type: 'expense', category: 'Transport', date: '2025-09-02' },
-        // ];
+const incomeRes = await fetch('http://localhost:3000/dashboard/get-incomes', {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+        'token': localStorage.getItem('token')
+    }
+});
+// let incomes = await incomeRes.json();
+// // let transactions = await res.json();
+// let expenses = await res.json();
+// let transactions = [...expenses, ...incomes];
+
+const incomes = (await incomeRes.json()).map(i => ({ ...i, type: 'income' }));
+const expenses = (await expenseRes.json()).map(e => ({ ...e, type: 'expense' }));
+const transactions = [...expenses, ...incomes];
+
+
         let categoryChart;
+
 
         // --- DOM ELEMENTS ---
         const balanceEl = document.getElementById('current-balance');
@@ -27,12 +38,21 @@ let transactions = await res.json();
         const noChartDataEl = document.getElementById('no-chart-data');
         
         // Modal
-        const modal = document.getElementById('add-transaction-modal');
-        const modalForm = document.getElementById('add-transaction-form');
-        const modalTitle = document.getElementById('modal-title');
-        const modalSubmitBtn = document.getElementById('modal-submit-btn');
-        const closeModalBtn = document.getElementById('close-modal-btn');
+        const incomeModal = document.getElementById('add-income-modal');
+        const expenseModal = document.getElementById('add-expense-modal');
+        // const modalForm = document.getElementById('add-transaction-form');
+        const incomeForm = document.getElementById('add-income-form');
+        const expenseForm = document.getElementById('add-expense-form');
+
+        const incomeModalTitle = document.getElementById('income-modal-title');
+        const expenseModalTitle = document.getElementById('expense-modal-title');
+
+        const incomeModalSubmitBtn = document.getElementById('income-modal-submit-btn');
+        const expenseModalSubmitBtn = document.getElementById('expense-modal-submit-btn');
         
+        const closeIncomeModalBtn = document.getElementById('close-income-modal-btn');
+        const closeExpenseModalBtn = document.getElementById('close-expense-modal-btn');
+
         // Buttons
         const addIncomeBtnHeader = document.getElementById('add-income-btn-header');
         const addExpenseBtnHeader = document.getElementById('add-expense-btn-header');
@@ -54,13 +74,22 @@ let transactions = await res.json();
         }[category] || 'fas fa-tag');
         
         // Date picker initialization
-        flatpickr("#date", {
+        flatpickr("#expense-date, #income-date", {
             dateFormat: "Y-m-d",
             defaultDate: "today"
         });
 
         // --- RENDER FUNCTIONS ---
         const renderTransactions = (filteredTransactions) => {
+
+        filteredTransactions.forEach(t => {
+            t.date = new Date(t.date).toLocaleDateString('en-US', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        });
+
             transactionListEl.innerHTML = '';
             const transactionsToRender = filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
             
@@ -83,7 +112,7 @@ let transactions = await res.json();
                                 <i class="${getCategoryIcon(t.category)}"></i>
                             </div>
                             <div>
-                                <p class="font-medium text-sm md:text-base">${t.description}</p>
+                                <p class="font-medium text-sm md:text-base">${t.comment ? t.comment : t.category}</p>
                                 <p class="text-xs" style="color: var(--text-muted);">${t.category} &bull; ${t.date}</p>
                             </div>
                         </div>
@@ -116,7 +145,7 @@ let transactions = await res.json();
         };
 
         const renderCategoryChart = () => {
-            const expenseData = transactions
+            const expenseData = transactions.filter(t => t.type === 'expense')
                 .reduce((acc, t) => {
                     acc[t.category] = (acc[t.category] || 0) + t.amount;
                     return acc;
@@ -181,54 +210,131 @@ let transactions = await res.json();
             renderTransactions(transactions);
             updateSummary();
             renderCategoryChart();
-            localStorage.setItem('transactions', JSON.stringify(transactions));
         };
         
-        // --- EVENT HANDLERS ---
-        const handleFormSubmit = (e) => {
-            e.preventDefault();
-            const formData = new FormData(modalForm);
-            const newTransaction = {
-                id: Date.now(),
-                description: formData.get('description'),
-                amount: parseFloat(formData.get('amount')),
-                type: formData.get('type'),
-                category: formData.get('category'),
-                date: formData.get('date')
-            };
 
-            transactions.push(newTransaction);
-            updateUI();
-            modalForm.reset();
-            flatpickr("#date", { defaultDate: "today" }); // Reset date picker
-            closeModal();
-        };
+
+        // --- EVENT HANDLERS ---
 
         const handleSearch = (e) => {
             const query = e.target.value.toLowerCase();
             const filtered = transactions.filter(t =>
-                t.description.toLowerCase().includes(query) ||
+                t.comment.toLowerCase().includes(query) ||
                 t.category.toLowerCase().includes(query)
             );
             renderTransactions(filtered);
         };
-        
-        const openModal = (type = 'expense') => {
-            modalForm.elements.type.value = type;
-            if (type === 'income') {
-                modalTitle.textContent = 'New Income';
-                modalSubmitBtn.className = 'btn btn-income w-full py-4 text-lg';
-                modalSubmitBtn.textContent = 'Add Income';
-            } else {
-                modalTitle.textContent = 'New Expense';
-                modalSubmitBtn.className = 'btn btn-expense w-full py-4 text-lg';
-                modalSubmitBtn.textContent = 'Add Expense';
-            }
-            modal.classList.remove('hidden');
+
+        const handleExpenseForm = async (e) => {
+            e.preventDefault();
+            const expenseFormData = new FormData(expenseForm);
+
+            const id = Date.now();
+            const comment = expenseFormData.get('expense-comment'); //! description--> comment
+            const amount = parseFloat(expenseFormData.get('expense-amount'));
+            const type = 'expense';
+            const category = expenseFormData.get('expense-category');
+            const date = expenseFormData.get('expense-date');
+
+            console.log(comment,amount,category,date)
+
+            try {
+        const res = await fetch('http://localhost:3000/dashboard/expense', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'token': localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                amount,
+                category,
+                comment: comment || category,
+                date
+            })
+        })
+
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+
+        const data = await res.json();
+        console.log('Expense added:', data);
+
+        // // Optionally update UI with the new expense
+       transactions.push({ ...data.expense, type: 'expense' });
+        updateUI();
+        updateSummary();
+        renderCategoryChart();
+
+        expenseForm.reset();
+        flatpickr("#expense-date", { defaultDate: "today" });
+        closeExpenseModal();
+
+    } catch (err) {
+        console.error(' Error adding expense:', err);
+        alert('Failed to add expense. Please try again.');
+    }
+            updateUI();
+            expenseForm.reset();
+            flatpickr("#expense-date", { defaultDate: "today" }); // Reset date picker
+            closeExpenseModal();
         };
-        
-        const closeModal = () => modal.classList.add('hidden');
-        
+        const  handleIncomeForm = async (e) => {
+            e.preventDefault();
+            const incomeFormData = new FormData(incomeForm);
+            const id = Date.now();
+            const comment = incomeFormData.get('income-comment'); //! description--> comment
+            const amount = parseFloat(incomeFormData.get('income-amount'));
+            const type = 'income';
+            const category = incomeFormData.get('income-category');
+            const date = incomeFormData.get('income-date');
+
+            const res = await fetch('http://localhost:3000/dashboard/income', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'token': localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                amount,
+                category,
+                comment: comment || category,
+                date
+            })
+        });
+
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+
+        const data = await res.json();
+        console.log('Income added:', data);
+
+        transactions.push({ ...data.income, type: 'income' });
+        updateUI();
+        incomeForm.reset();
+        flatpickr("#date", { defaultDate: "today" }); // Reset date picker
+        closeIncomeModal();
+        };
+
+        const openIncomeModal = () => {
+            incomeModalTitle.textContent = 'New Income';
+            incomeModalSubmitBtn.className = 'btn btn-income w-full py-4 text-lg';
+            incomeModalSubmitBtn.textContent = 'Add Income';
+            incomeModal.classList.remove('hidden');
+        };
+
+        const openExpenseModal = () => {
+            expenseModalTitle.textContent = 'New Expense';
+            expenseModalSubmitBtn.className = 'btn btn-expense w-full py-4 text-lg';
+            expenseModalSubmitBtn.textContent = 'Add Expense';
+            expenseModal.classList.remove('hidden');
+        };
+
+        const closeIncomeModal = () => {
+            incomeModal.classList.add('hidden');
+        };
+
+        const closeExpenseModal = () => {
+            expenseModal.classList.add('hidden');
+        };
+
         // --- THEME ---
         const applyTheme = (theme) => {
             document.documentElement.setAttribute('data-theme', theme);
@@ -243,17 +349,20 @@ let transactions = await res.json();
         });
         
         // --- EVENT LISTENERS ---
-        modalForm.addEventListener('submit', handleFormSubmit);
+        expenseForm.addEventListener('submit', handleExpenseForm);
+        incomeForm.addEventListener('submit', handleIncomeForm);
         searchInput.addEventListener('input', handleSearch);
         
         // Modal toggles
-        addIncomeBtnHeader.addEventListener('click', () => openModal('income'));
-        addExpenseBtnHeader.addEventListener('click', () => openModal('expense'));
-        addIncomeFab.addEventListener('click', () => openModal('income'));
-        addExpenseFab.addEventListener('click', () => openModal('expense'));
-        closeModalBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); }); // Close on overlay click
-        
+        addIncomeBtnHeader.addEventListener('click', () => openIncomeModal());
+        addExpenseBtnHeader.addEventListener('click', () => openExpenseModal());
+        addIncomeFab.addEventListener('click', () => openIncomeModal());
+        addExpenseFab.addEventListener('click', () => openExpenseModal());
+        closeIncomeModalBtn.addEventListener('click', closeIncomeModal);
+        closeExpenseModalBtn.addEventListener('click', closeExpenseModal);
+
+        incomeModal.addEventListener('click', (e) => { if(e.target === incomeModal) closeIncomeModal(); }); // Close on overlay click
+        expenseModal.addEventListener('click', (e) => { if(e.target === expenseModal) closeExpenseModal(); }); // Close on overlay click
         // Mobile FAB toggle
         mainFab.addEventListener('click', () => fabContainer.classList.toggle('open'));
 
