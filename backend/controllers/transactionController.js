@@ -1,11 +1,11 @@
-const {createExpense,createIncome,findByCategory,deleteExpenseById,getTransactions,getSummary,getCategorySummary,filterTransactions} = require('../services/transactionService');
+const {addIncome,addExpense,findCategory,deleteExpenseById,getTransactions,getSummary,getCategorySummary,transactionsFiltering} = require('../services/transactionService');
 
 async function createExpense(req, res) {
   try {
     const userId = req.userId;
     const payload = req.body || {};
-    const doc = await transactionService.createExpense(userId, payload);
-    return res.status(201).json({ message: 'Expense created', expense: doc });
+    const doc = await addExpense(userId, payload);
+    return res.status(201).json({ message: 'Expense created'});
   } catch (err) {
     const status = err.status || 500;
     return res.status(status).json({ message: err.message, details: err.details });
@@ -15,9 +15,10 @@ async function createExpense(req, res) {
 async function createIncome(req, res) {
   try {
     const userId = req.userId;
+    console.log(userId)
     const payload = req.body || {};
-    const doc = await transactionService.createIncome(userId, payload);
-    return res.status(201).json({ message: 'Income created', income: doc });
+    const doc = await addIncome(userId,payload);
+    return res.status(201).json({ message: 'Income added sucessfully'});
   } catch (err) {
     const status = err.status || 500;
     return res.status(status).json({ message: err.message, details: err.details });
@@ -28,7 +29,7 @@ async function findByCategory(req, res) {
   try {
     const userId = req.userId;
     const category = req.query.category || req.body.category;
-    const data = await transactionService.findByCategory(userId, category);
+    const data = await findCategory(userId, category);
     // returns list of expense docs
     return res.status(200).json({ data });
   } catch (err) {
@@ -50,11 +51,11 @@ async function deleteExpense(req, res) {
   }
 }
 
-async function getTransactions(req, res) {
+async function renderTransactions(req, res) {
   try {
     const userId = req.userId;
     const { page, limit } = req.query;
-    const data = await transactionService.getTransactions(userId, { page, limit });
+    const data = await getTransactions(userId, { page, limit });
     return res.status(200).json(data);
   } catch (err) {
     const status = err.status || 500;
@@ -62,10 +63,10 @@ async function getTransactions(req, res) {
   }
 }
 
-async function getSummary(req, res) {
+async function Summary(req, res) {
   try {
     const userId = req.userId;
-    const data = await transactionService.getSummary(userId);
+    const data = await getSummary(userId);
     return res.status(200).json(data);
   } catch (err) {
     const status = err.status || 500;
@@ -73,10 +74,10 @@ async function getSummary(req, res) {
   }
 }
 
-async function getCategorySummary(req, res) {
+async function CategorySummary(req, res) {
   try {
     const userId = req.userId;
-    const data = await transactionService.getCategorySummary(userId);
+    const data = await getCategorySummary(userId);
     return res.status(200).json(data);
   } catch (err) {
     const status = err.status || 500;
@@ -96,7 +97,7 @@ async function filterTransactions(req, res) {
       page: req.query.page,
       limit: req.query.limit
     };
-    const data = await transactionService.filterTransactions(userId, filters);
+    const data = await transactionsFiltering(userId, filters);
     return res.status(200).json(data);
   } catch (err) {
     const status = err.status || 500;
@@ -109,8 +110,8 @@ module.exports = {
   createIncome,
   findByCategory,
   deleteExpense,
-  getTransactions,
-  getSummary,
-  getCategorySummary,
+  renderTransactions,
+  Summary,
+  CategorySummary,
   filterTransactions
 };

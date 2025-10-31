@@ -5,22 +5,32 @@ const { IncomeModel } = require('../models/IncomeModel');
 
 const { Types } = mongoose;
 
-function toObjectId(id) {
+function toObjectId(userId) {
   try {
-    return new Types.ObjectId(id);
+    return new mongoose.Types.ObjectId(userId);
   } catch (e) {
     throw Object.assign(new Error('Invalid id'), { status: 400, details: e.message });
   }
 }
 
-/**
- * Create an expense
- * @param {string} userId
- * @param {{amount:number, category:string, comment?:string, date?:string|Date}} payload
- */
-async function createExpense(userId, payload) {
+async function addExpense(userId, payload) {
   if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
   const userObjectId = toObjectId(userId);
+  const doc = {
+    amount: payload.amount,
+    category: payload.category,
+    comment: payload.comment || payload.category,
+    date: payload.date ? new Date(payload.date) : new Date(),
+    userId: userObjectId
+  };
+  const expense = await ExpenseModel.create(doc);
+  return expense;
+}
+
+
+async function addIncome(userId, payload) {
+  if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
+  userObjectId= toObjectId(userId)
   const doc = {
     amount: payload.amount,
     category: payload.category,
@@ -28,51 +38,30 @@ async function createExpense(userId, payload) {
     date: payload.date ? new Date(payload.date) : new Date(),
     userId: userObjectId
   };
-  return ExpenseModel.create(doc);
+ const income = await IncomeModel.create(doc);
+  // return income;
 }
 
-/**
- * Create an income entry
- */
-async function createIncome(userId, payload) {
-  if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
-  const userObjectId = toObjectId(userId);
-  const doc = {
-    amount: payload.amount,
-    category: payload.category,
-    comment: payload.comment || '',
-    date: payload.date ? new Date(payload.date) : new Date(),
-    userId: userObjectId
-  };
-  return IncomeModel.create(doc);
-}
-
-/**
- * Find expenses by category for the user
- */
-async function findByCategory(userId, category) {
+async function findCategory(userId, category) {
   if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
   if (!category) return [];
   const userObjectId = toObjectId(userId);
   return ExpenseModel.find({ userId: userObjectId, category }).lean();
 }
 
-/**
- * Delete an expense by id (returns deleted doc or null)
- * Note: dashboard.js delete route expects deletion from ExpenseModel.
- */
+
 async function deleteExpenseById(id) {
   if (!id) throw Object.assign(new Error('Missing id'), { status: 400 });
+  const expense = await ExpenseModel.findById(id);
   return ExpenseModel.findByIdAndDelete(id);
 }
 
-/**
- * Get combined transactions (expenses + incomes) with pagination
- * Returns { transactions, total, totalPages, currentPage }
- */
+
 async function getTransactions(userId, { page = 1, limit = 10 } = {}) {
   if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
+  
   const userObjectId = toObjectId(userId);
+  
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const limitNum = Math.max(1, parseInt(limit, 10) || 10);
   const skip = (pageNum - 1) * limitNum;
@@ -99,6 +88,7 @@ async function getTransactions(userId, { page = 1, limit = 10 } = {}) {
   ];
 
   const results = await ExpenseModel.aggregate(pipeline);
+
   const metadata = results[0]?.metadata?.[0];
   const total = metadata ? metadata.total : 0;
   const transactions = results[0]?.data || [];
@@ -111,11 +101,10 @@ async function getTransactions(userId, { page = 1, limit = 10 } = {}) {
   };
 }
 
-/**
- * Compute totals: all-time totals and this-month totals
- */
+
 async function getSummary(userId) {
   if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
+  
   const userObjectId = toObjectId(userId);
   const today = new Date();
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -157,9 +146,7 @@ async function getSummary(userId) {
   };
 }
 
-/**
- * Category summary for expenses (convert to object like {Food: 1500, ...})
- */
+
 async function getCategorySummary(userId) {
   if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
   const userObjectId = toObjectId(userId);
@@ -177,11 +164,8 @@ async function getCategorySummary(userId) {
   return summary;
 }
 
-/**
- * Filter transactions with flexible filters and pagination
- * filters: { start, end, category, type, comment, page, limit }
- */
-async function filterTransactions(userId, filters = {}) {
+
+async function transactionsFiltering(userId, filters = {}) {
   if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
   const userObjectId = toObjectId(userId);
 
@@ -258,12 +242,12 @@ async function filterTransactions(userId, filters = {}) {
 }
 
 module.exports = {
-  createExpense,
-  createIncome,
-  findByCategory,
+  addExpense,
+  addIncome,
+  findCategory,
   deleteExpenseById,
   getTransactions,
   getSummary,
   getCategorySummary,
-  filterTransactions
+  transactionsFiltering
 };

@@ -11,7 +11,7 @@ const PDFDocument = require('pdfkit-table'); // Assuming you have a package for 
 const { all, get } = require('axios');
 
 transactionRouter.use(express.json())
-const {createExpense,createIncome,findByCategory,deleteExpense,renderTransactions,summary,CategorySummary,filterTransactions} = require('../controllers/transactionController');
+const {createExpense,createIncome,findByCategory,deleteExpense,renderTransactions,Summary,CategorySummary,filterTransactions} = require('../controllers/transactionController');
 
 
 // expense creation routes
@@ -19,15 +19,15 @@ transactionRouter.post('/expense',userMiddleware,createExpense)
 transactionRouter.post('/income',userMiddleware,createIncome)
 // find expense by category(query param)
 transactionRouter.get('/find',userMiddleware,findByCategory)
-// ! delete route
-
+// delete route
 transactionRouter.delete('/delete',userMiddleware,deleteExpense);
-
+// transaction
 transactionRouter.get('/get-transactions', userMiddleware,renderTransactions);
-// Add this route to your backend router
-transactionRouter.get('/summary', userMiddleware,summary)
-// Add this route to your backend router
+// summary of total income - expense and total balance
+transactionRouter.get('/summary', userMiddleware,Summary)
+// give grouping of income-expense according to category
 transactionRouter.get('/category-summary', userMiddleware,CategorySummary)
+//filtering
 transactionRouter.get('/filter', userMiddleware,filterTransactions)
 
 module.exports = {
