@@ -8,11 +8,11 @@ require('dotenv').config();
 
 const connectDB=require('../backend/config/db.js')
 
-const {userRouter} =require('./router/user')
-const {expenseRouter}=require('./router/dashboard.js')
+const {authRouter} =require('./router/user')
+const {transactionRouter}=require('./router/transaction.js')
 const {downloadRouter}=require('./router/download.js')
 const {uploadRouter}=require('./router/upload.js')
-const {chartRouter} = require('./router/charts.js')
+const {dashboardRouter} = require('./router/dashboard.js')
 const {userMiddleware} = require('./middleware/userauth')
 
 const app = express();
@@ -30,11 +30,11 @@ app.use(cors({
 // !
 app.use(express.static(path.join(__dirname, '../public')));
 
-app.use('/user',userRouter);
-app.use('/dashboard',expenseRouter)
+app.use('/user',authRouter);
+app.use('/transaction',transactionRouter)
 app.use('/download',downloadRouter);
 app.use('/upload',uploadRouter);
-app.use('/charts',chartRouter);
+app.use('/dashboard',dashboardRouter);
 
 connectDB();
 
