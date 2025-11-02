@@ -15,7 +15,7 @@ const ExpenseSchema = new mongoose.Schema({
     required: true,
     enum: [
       'Food', 'Transportation', 'Shopping', 'Entertainment',
-      'Housing', 'Utilities', 'Healthcare', 'Other'
+      'Housing', 'Investment', 'Healthcare', 'Other'
     ]
   },
   comment: {
