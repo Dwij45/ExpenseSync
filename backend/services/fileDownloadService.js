@@ -11,62 +11,81 @@ function toObjectId(userId) {
 }
 
 async function pdfGenerator(userId){
-if(!userId) throw Object.assign(new Error('Missing userId'),{status:400});
+  if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
 
-const userObjectId = toObjectId(userId);
-const expense = await ExpenseModel.find({userId:userObjectId}).lean()
+  const userObjectId = toObjectId(userId);
+  const expense = await ExpenseModel.find({ userId: userObjectId }).lean();
 
-// Convert MongoDB docs into table rows
-    const rows = expenses.map(exp => [
-      exp.category,
-      `${exp.amount} ₹`,
-      exp.date.toISOString().split("T")[0],
-      exp.comment || "No comments"
-    ]);
+const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 
-    // PDF setup
-        const doc = new PDFDocument();
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader("Content-Disposition", "attachment; filename=expenses.pdf");
-        doc.pipe(res);  //Instead of saving it to disk, you’re sending it directly to the browser.
-    
-    // Table data
-        const table = {
-          title: "Expense Report",
-          subtitle: "Generated from MongoDB",
-          headers: ["Category", "Amount", "Date","comments"],
-          rows
-        };
-    // Draw table
-        const pdf = await doc.table(table, { columnsSize: [200, 100, 100,300] });
-        doc.end();
-        return pdf;
+const rows = expense.map(exp => [
+  exp.category,
+  'Rs. ' + exp.amount,
+  exp.date ? exp.date.toISOString().split('T')[0] : '',
+  exp.comment || exp.category
+]);
+
+  // Return a function that writes the PDF to the provided response stream
+  return function streamPdfToResponse(res) {
+    const doc = new PDFDocument();
+    // Set headers for download
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=expenses.pdf");
+    doc.pipe(res);
+
+    const table = {
+      title: "Expense Report",
+      subtitle: "Generated from MongoDB",
+      headers: ["Category", "Amount", "Date", "comments"],
+      rows
+    };
+
+    // Draw table and finalize PDF
+    // pdfkit-table may be synchronous; if it's async, it should return a Promise
+    try {
+      // if doc.table returns a promise await it
+      if (typeof doc.table === 'function') {
+        // call table; if it returns a promise we don't block here - stream will flush when doc.end() is called
+        doc.table(table, { columnsSize: [200, 100, 100, 300] });
+      }
+    } catch (e) {
+      // In case table drawing fails, end the document and propagate
+      doc.end();
+      throw e;
+    }
+
+    doc.end();
+    // Do not return anything; response is streamed
+  };
 }
 async function csvGenerator(userId) {
-    if(!userId) throw Object.assign(new Error('Missing userId'),{status:400});
-    const userObjectId = toObjectId(userId);
-     // CSV headers
-    const headers = ["Category", "Amount", "Date", "comment"];
-    
-    // CSV rows
-    const rows = expenses.map(exp => [
-      exp.category,
-      `${exp.amount} ₹`,
-      exp.date.toISOString().split("T")[0],
-      exp.comment || exp.category
-    ]);
+  if (!userId) throw Object.assign(new Error('Missing userId'), { status: 400 });
+  const userObjectId = toObjectId(userId);
+  const expenses = await ExpenseModel.find({ userId: userObjectId }).lean();
 
-    // Convert to CSV string
-    const csvContent = [
-      headers.join(","), // Header row
-      ...rows.map(row => row.join(","))
-    ].join("\n");
+  // CSV headers
+  const headers = ["Category", "Amount", "Date", "comment"];
 
-    // Set headers so browser downloads it
+  // CSV rows
+  const rows = expenses.map(exp => [
+    exp.category,
+    `${exp.amount} ₹`,
+    exp.date ? exp.date.toISOString().split("T")[0] : '',
+    exp.comment || ''
+  ]);
+
+  // Convert to CSV string
+  const csvContent = [
+    headers.join(","), // Header row
+    ...rows.map(row => row.map(cell => String(cell).replace(/"/g, '""')).join(","))
+  ].join("\n");
+
+  // Return a function that will write CSV to response
+  return function streamCsvToResponse(res) {
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", "attachment; filename=expenses.csv");
-    return csvContent;
-   
+    res.send(csvContent);
+  };
 }
 module.exports={
     pdfGenerator,

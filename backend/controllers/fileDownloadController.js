@@ -1,29 +1,32 @@
-const download = require('../router/download');
-const {pdfGenerator,csvGenerator} = require('../services/fileDownloadService');
+const { pdfGenerator, csvGenerator } = require('../services/fileDownloadService');
 
-async function downloadPdf(req,res){
-    try{
+async function downloadPdf(req, res) {
+    try {
         const userId = req.userId;
-        const pdfFile = await pdfGenerator(userId);
-        res.send(pdfFile);
-    }catch(err){
+        const streamPdf = await pdfGenerator(userId);
+        // streamPdf is a function that accepts the express response and streams the PDF
+        streamPdf(res);
+        // streaming will end the response when doc.end() is called in the service
+        return;
+    } catch (err) {
         const status = err.status || 500;
         return res.status(status).json({ message: err.message, details: err.details });
     }
-
 }
-async function downloadCsv(req,res){
-    try{
+
+async function downloadCsv(req, res) {
+    try {
         const userId = req.userId;
-        const csvFile = await csvGenerator(userId);
-        res.send(csvFile);
-    }catch(err){
+        const streamCsv = await csvGenerator(userId);
+        streamCsv(res);
+        return;
+    } catch (err) {
         const status = err.status || 500;
         return res.status(status).json({ message: err.message, details: err.details });
-
     }
 }
-module.exports={
+
+module.exports = {
     downloadPdf,
     downloadCsv
-}
+};
