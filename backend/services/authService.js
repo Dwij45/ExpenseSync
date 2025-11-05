@@ -10,24 +10,23 @@ const config = {
 
 const signupSchema = z.object({
     email: z.string().min(3).max(100).email(),
-    password: z.string().min(6),
+    password: z.string().min(6).regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[+$@#%&!]).+$/,"Password must contain uppercase, lowercase, number, and special symbol"),
     name: z.string().min(3).max(50)
 });
 
 async function createUser({ email, password, name }) {
 
+    const existing = await UserModel.findOne({ email }).lean();
+    if (existing) {
+        const err = new Error('Email already registered');
+        err.status = 409;
+        throw err;
+    }
     const parsed = signupSchema.safeParse({ email, password, name });
     if (!parsed.success) {
         const err = new Error('Invalid input');
         err.status = 400;
         err.details = parsed.error.issues;
-        throw err;
-    }
-
-    const existing = await UserModel.findOne({ email }).lean();
-    if (existing) {
-        const err = new Error('Email already registered');
-        err.status = 409;
         throw err;
     }
 
