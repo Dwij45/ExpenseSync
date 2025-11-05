@@ -33,7 +33,7 @@ async function fetchtimeData(){
     const token = localStorage.getItem('token');
 
         const [days, months,year]= await Promise.allSettled([
-            fetch('http://localhost:3000/charts/time-category-summary?time=day', {
+            fetch('http://localhost:3000/dashboard/time-category-summary?time=day', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -41,14 +41,14 @@ async function fetchtimeData(){
             }
         }).then((res) => res.json()
     ),
-        fetch('http://localhost:3000/charts/time-category-summary?time=month', {
+        fetch('http://localhost:3000/dashboard/time-category-summary?time=month', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
                 'token': token
             }
         }).then((res) => res.json()),
-        fetch('http://localhost:3000/charts/time-category-summary?time=year',{
+        fetch('http://localhost:3000/dashboard/time-category-summary?time=year',{
             method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ async function fetchtimeData(){
 }
 async function categorydata(){
     const token = localStorage.getItem('token');
-    const data = await fetch('http://localhost:3000/charts/total-summary', {
+    const data = await fetch('http://localhost:3000/dashboard/total-summary', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -99,14 +99,14 @@ async function categorydata(){
 async function getalldata(){
     const token = localStorage.getItem('token');
     const [allInfo, totalSummary]= await Promise.all([
-        fetch('http://localhost:3000/charts/all-info',{
+        fetch('http://localhost:3000/dashboard/all-info',{
         method:'GET',
         headers:{
             'Content-Type': 'application/json',
             'token': token
         }
     }).then((res)=>res.json()),
-    fetch('http://localhost:3000/charts/total-summary', {
+    fetch('http://localhost:3000/dashboard/total-summary', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ async function getalldata(){
 }
  async function getallbubbledata(){
     const token = localStorage.getItem('token');
-    const data= await fetch('http://localhost:3000/charts/all-info',{
+    const data= await fetch('http://localhost:3000/dashboard/all-info',{
         method:'GET',
         headers:{
             'Content-Type': 'application/json',
