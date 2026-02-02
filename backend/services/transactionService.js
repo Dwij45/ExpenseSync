@@ -50,10 +50,17 @@ async function findCategory(userId, category) {
 }
 
 
-async function deleteExpenseById(id) {
+async function deleteExpenseById(id,type) {
   if (!id) throw Object.assign(new Error('Missing id'), { status: 400 });
-  const expense = await ExpenseModel.findById(id);
-  return ExpenseModel.findByIdAndDelete(id);
+  if(type==='expense'){
+    const expense = await ExpenseModel.findById(id);
+    return ExpenseModel.findByIdAndDelete(id);
+  }
+
+  else if(type==='income'){
+    const income = await IncomeModel.findById(id);
+    return IncomeModel.findByIdAndDelete(id)
+  }
 }
 
 

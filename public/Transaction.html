@@ -3,263 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zen Growth Expense Tracker</title>
+    <title>Transaction Manager - ExpenseSync</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+
     <style>
-        /* A more refined "Zen Growth" theme */
+        /* ============================
+           1. UNIFIED THEME VARIABLES
+           ============================ */
         :root {
-            --primary-color: #2d9a9f;
-            --secondary-color: #f3b562;
+            /* Core Brand Colors */
+            --primary: #028090;  
+            --accent: #EAB054;
+            
+            /* Functional Colors */
             --accent-green: #27ae60;
             --accent-red: #e74c3c;
-            --text-color: #2c3e50;
-            --text-muted: #7f8c8d;
-            --bg-color: #f7f9fb;
-            --card-bg: #ffffff;
-            --border-color: #e0e6ed;
-            --shadow-color: rgba(149, 157, 165, 0.1);
-            --list-border-color: #d1d5db;
+            
+            /* UI Colors */
+            --text-color: #2A2A2A;
+            --text-muted: #575757;
+            --bg-color: #f4f6f8;
+            --card-bg: #FFFFFF;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+            
+            /* Button Specifics (Light Mode) */
+            --btn-export-bg: #e2e8f0; /* Light Gray for Export Btns */
+            
+            /* Dark Mode Variables */
+            --bg-color-translucent: rgba(255, 255, 255, 0.95);
         }
 
         [data-theme="dark"] {
-            --primary-color: #4cc9f0;
-            --secondary-color: #f4a261;
-            --accent-green: #2ecc71;
-            --accent-red: #ff7675;
-            --text-color: #ecf0f1;
-            --text-muted: #95a5a6;
+            --primary: #028090;
+            --accent: #b5aeba;
+            --text-color: #e5e7eb;
+            --text-muted: #A3A3A3;
             --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --border-color: #333;
-            --shadow-color: rgba(0, 0, 0, 0.2);
-            --list-border-color: #333;
+            --card-bg: #1E1E1E;
+            --border-color: #4B5563;
+            --shadow: 0 4px 15px rgba(0,0,0,0.3);
+            --bg-color-translucent: rgba(18, 18, 18, 0.95);
+            
+            --btn-export-bg: rgba(255,255,255,0.05); /* Dark translucent for export */
         }
 
-        * {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
-
+        /* ============================
+           2. GLOBAL STYLES & RESET
+           ============================ */
+        * { box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 1rem;
-            box-shadow: 0 8px 24px var(--shadow-color);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn {
-            border-radius: 0.75rem;
+        /* ============================
+           3. NAVBAR STYLES 
+           ============================ */
+        .navbar {
+            position: sticky; top: 0; left: 0; width: 100%; z-index: 1000;
             padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            transition: transform 0.2s ease, opacity 0.2s ease;
-            border: none;
-            cursor: pointer;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-        .btn-primary { background-color: var(--primary-color); color: white; }
-        .btn-income { background-color: var(--accent-green); color: white; }
-        .btn-expense { background-color: var(--accent-red); color: white; }
-        .btn-secondary {
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-        }
-        .btn-secondary:hover {
-            background-color: var(--bg-color);
+            background-color: var(--primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease;
         }
 
+        [data-theme="dark"] .navbar {
+            background-color: var(--bg-color-translucent);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-container {
+            max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .logo {
+            display: flex; align-items: center; font-size: 1.5rem; font-weight: bold;
+            color: #ffffff; text-decoration: none;
+        }
+        [data-theme="dark"] .logo { color: var(--text-color); }
+        .logo svg { width: 32px; height: 32px; margin-right: 10px; stroke: #ffffff; }
+        [data-theme="dark"] .logo svg { stroke: var(--text-color); }
+
+        .nav-links { display: flex; align-items: center; gap: 20px; }
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.9); text-decoration: none; font-weight: 500;
+            transition: all 0.3s ease; font-size: 0.95rem;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        [data-theme="dark"] .nav-links a { color: var(--text-color); }
+        [data-theme="dark"] .nav-links a:hover { color: var(--primary); }
+
+        .nav-buttons { display: flex; gap: 10px; align-items: center; }
+
+        /* General Buttons */
+        .btn {
+            padding: 8px 16px; border-radius: 8px; text-decoration: none; cursor: pointer;
+            transition: all 0.3s ease; border: none; font-size: 0.9rem; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 5px; font-family: 'Inter', sans-serif;
+        }
+        .btn:hover { transform: translateY(-2px); }
+
+        /* --- NAVBAR SPECIFIC BUTTONS (UPDATED COLORS) --- */
+        
+        /* Base Nav Action */
+        .btn-nav-action {
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            /* Default fallback */
+            background-color: rgba(255, 255, 255, 0.15); 
+        }
+
+        /* Specific Income/Expense styling for Light Mode (Solid Colors) */
+        #add-income-btn-header {
+            background-color: var(--accent-green); 
+            border-color: var(--accent-green);
+            color: white;
+        }
+        #add-income-btn-header:hover {
+            background-color: #219150; /* Slightly darker green */
+        }
+
+        #add-expense-btn-header {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+            color: white;
+        }
+        #add-expense-btn-header:hover {
+            background-color: #c0392b; /* Slightly darker red */
+        }
+
+        /* Dark Mode overrides for Nav Buttons (To keep them subtle) */
+        [data-theme="dark"] .btn-nav-action {
+            background-color: var(--card-bg); 
+            color: var(--text-color); 
+            border: 1px solid var(--border-color);
+        }
+        [data-theme="dark"] #add-income-btn-header {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            background-color: transparent;
+        }
+        [data-theme="dark"] #add-expense-btn-header {
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+            background-color: transparent;
+        }
+        [data-theme="dark"] .btn-nav-action:hover {
+            border-color: var(--primary); 
+            color: var(--primary); 
+            background-color: rgba(255,255,255,0.05);
+        }
+
+
+        /* Logout Button */
+        .btn-login { background-color: var(--card-bg); color: var(--primary); border: 1px solid transparent; }
+        [data-theme="dark"] .btn-login { background-color: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+
+        /* Theme Toggle */
+        .theme-toggle { background: none; border: none; color: #ffffff; font-size: 1.2rem; cursor: pointer; padding: 5px; display: flex; align-items: center; }
+        [data-theme="dark"] .theme-toggle { color: var(--text-color); }
+
+        /* ============================
+           4. PAGE CONTENT STYLES
+           ============================ */
+        .card {
+            background-color: var(--card-bg); border-radius: 1rem;
+            box-shadow: var(--shadow); border: 1px solid var(--border-color);
+        }
 
         .text-accent-green { color: var(--accent-green); }
         .text-accent-red { color: var(--accent-red); }
         .bg-accent-green-light { background-color: rgba(39, 174, 96, 0.1); }
         .bg-accent-red-light { background-color: rgba(231, 76, 60, 0.1); }
+        
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-income { background-color: var(--accent-green); color: white; border: none;}
+        .btn-expense { background-color: var(--accent-red); color: white; border: none;}
 
-        .theme-toggle {
-            background: var(--card-bg);
+        /* --- EXPORT BUTTONS (UPDATED) --- */
+        .btn-export {
+            background-color: var(--btn-export-bg); /* Now Light Gray in Light Mode */
             border: 1px solid var(--border-color);
-            padding: 8px;
-            border-radius: 50%;
-            color: var(--text-muted);
+            color: var(--text-color);
+            padding: 10px 16px;
+            border-radius: 8px;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
+            font-weight: 600;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .btn-export:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: rgba(2, 128, 144, 0.1); /* Subtle primary tint */
         }
 
-        .modal {
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background-color: var(--card-bg);
-            animation: slideUp 0.3s ease-out;
-        }
+        /* Modals */
+        .modal { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); }
+        .modal-content { background-color: var(--card-bg); animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        /* Pagination */
+        #prev-page-btn, #next-page-btn {
+            border: 1px solid var(--border-color); color: var(--text-color);
+            padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.875rem;
+            background-color: var(--card-bg); transition: background-color 0.2s ease;
         }
-        
-        /* Floating Action Button Speed Dial */
+        #prev-page-btn:disabled, #next-page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* FAB */
         .fab-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; }
         .fab-options { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 1rem;
-            position: absolute;
-            bottom: 4.5rem; /* Position above main FAB */
-            right: 0;
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            position: absolute; bottom: 4.5rem; right: 0;
             transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-            transform: translateY(10px) scale(0.9);
-            opacity: 0;
-            pointer-events: none;
+            transform: translateY(10px) scale(0.9); opacity: 0; pointer-events: none;
         }
-        .fab-container.open .fab-options {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .fab-container.open .fab-options { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         .fab, .fab-option {
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            color: white;
-            cursor: pointer;
+            width: 3.5rem; height: 3.5rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); color: white; cursor: pointer; border: none;
         }
-        .fab {
-            background-color: var(--primary-color);
-            transition: transform 0.2s ease;
-        }
-        .fab-container.open .fab {
-            transform: rotate(45deg);
-        }
-        .fab-option {
-            font-size: 0.8rem;
-            position: relative;
-        }
-        .fab-option .tooltip {
-            position: absolute;
-            right: 4.5rem;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            white-space: nowrap;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        /* --- NEW STYLES FOR BUTTONS --- */
-        #next-month-btn, #prev-month-btn, #open-filter-modal-btn {
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            background-color: var(--card-bg);
-        }
-        #next-month-btn:hover, #prev-month-btn:hover, #open-filter-modal-btn:hover {
-            background-color: var(--bg-color);
-        }
-        #next-month-btn:disabled, #prev-month-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .fab { background-color: var(--primary); transition: transform 0.2s ease; }
+        .fab-container.open .fab { transform: rotate(45deg); }
 
-    .flatpickr-day.today {
-    border: 1px solid var(--secondary-color);
-    color: var(--primary-color);
-    font-weight: bold;
-}
+        /* Flatpickr */
+        .flatpickr-calendar { background-color: var(--card-bg) !important; border-color: var(--border-color) !important; }
+        .flatpickr-day { color: var(--text-color) !important; }
+        .flatpickr-day.selected { background-color: var(--primary) !important; border-color: var(--primary) !important; }
 
-/* Make sure the selected day overrides the 'today' styles */
-.flatpickr-day.selected.today {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-}
-
-        /* This targets your new button IDs */
-#prev-page-btn, #next-page-btn {
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    background-color: var(--card-bg);
-    transition: background-color 0.2s ease;
-}
-
-#prev-page-btn:hover, #next-page-btn:hover {
-    background-color: var(--bg-color);
-}
-
-/* This is the new rule that handles the inactive state */
-#prev-page-btn:disabled, #next-page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: var(--bg-color);
-    transform: none;
-}
-        .flatpickr-calendar { background-color: var(--card-bg); border-color: var(--border-color); }
-        .flatpickr-day { color: var(--text-color); }
-        .flatpickr-day.selected { background-color: var(--primary-color); border-color: var(--primary-color); }
-        .flatpickr-weekday, .flatpickr-monthDropdown-month, .numInput { color: var(--text-color); }
-        
+        @media (max-width: 768px) {
+            .navbar { padding: 0.75rem 1rem; }
+            .nav-links { display: none; }
+            .btn span { display: none; }
+            .btn i { margin: 0; font-size: 1.1rem; }
+        }
     </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col">
+<body class="antialiased min-h-screen flex flex-col" data-theme="light">
 
-    <header class="bg-transparent backdrop-blur-lg py-4 px-6 md:px-12 sticky top-0 z-40 border-b border-[var(--border-color)]">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" style="color: var(--primary-color);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2a10 10 0 1 0 10 10" />
-                    <path d="M12 18a6 6 0 1 0 0-12" />
-                    <path d="M12 12v6" />
-                    <path d="M12 12l4-4" />
-                </svg>
-                <span class="text-xl font-bold" style="color: var(--primary-color);">Zen Growth</span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div class="hidden md:flex items-center space-x-2">
-                    <button id="add-income-btn-header" class="btn btn-income flex items-center space-x-2">
-                        <i class="fas fa-plus text-sm"></i><span>Income</span>
-                    </button>
-                    <button id="add-expense-btn-header" class="btn btn-expense flex items-center space-x-2">
-                        <i class="fas fa-minus text-sm"></i><span>Expense</span>
-                    </button>
-                </div>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/public/home.html" class="logo">
+                <span>ExpenseSync</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/public/dashboard.html">Dashboard</a>
+                <a href="#" style="color: var(--accent)">Transactions</a>
                 <button id="theme-toggle" class="theme-toggle">
-                    <i class="fas fa-moon"></i>
+                    <i class="ri-moon-line"></i>
+                </button>
+                <!-- <a href="#">Reports</a> -->
+            </div>
+            <div class="nav-buttons">
+                <button id="mobile-theme-toggle" class="theme-toggle" style="display:none;">
+                    <i class="ri-moon-line"></i>
+                </button>
+            </div>
+
+            <div class="nav-buttons">
+                <button id="add-income-btn-header" class="btn btn-nav-action hidden md:inline-flex">
+                    <i class="ri-add-line"></i> <span>Income</span>
+                </button>
+                <button id="add-expense-btn-header" class="btn btn-nav-action hidden md:inline-flex">
+                    <i class="ri-subtract-line"></i> <span>Expense</span>
+                </button>
+
+
+                <button onclick="logout()" class="btn btn-login">
+                    Logout
                 </button>
             </div>
         </div>
-    </header>
+    </nav>
 
     <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -267,7 +305,7 @@
                 <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div class="card p-6 col-span-1 md:col-span-2">
                         <h2 class="text-lg font-semibold mb-2" style="color: var(--text-muted);">Current Balance</h2>
-                        <span id="current-balance" class="text-5xl font-bold" style="color: var(--primary-color);">₹0.00</span>
+                        <span id="current-balance" class="text-5xl font-bold" style="color: var(--primary);">₹0.00</span>
                     </div>
                     <div class="card p-6">
                         <h3 class="text-sm font-medium mb-2" style="color: var(--text-muted);">This Month's Income</h3>
@@ -283,41 +321,51 @@
                     <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                         <h2 class="text-xl font-semibold">Transactions</h2>
                         <div class="flex items-center space-x-2 w-full md:w-auto">
-                            <input type="text" id="search-input" placeholder="Search comments..." class="rounded-lg w-full md:w-auto p-2 text-sm focus:outline-none focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
-                            
-                            <button id="open-filter-modal-btn" class="flex items-center space-x-2 transition">
-                                <i class="fas fa-filter text-sm"></i>
-                                <span>Filter</span>
+                            <input type="text" id="search-input" placeholder="Search..." class="rounded-lg w-full md:w-auto p-2 text-sm focus:outline-none focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary);">
+                            <button id="open-filter-modal-btn" class="btn btn-export w-auto" style="width: auto;">
+                                <i class="fas fa-filter text-sm"></i> <span>Filter</span>
                             </button>
                         </div>
                     </div>
+                    
                     <ul id="transaction-list" class="divide-y" style="border-color: var(--border-color);">
                         </ul>
-                    <div id="no-transactions" class="text-center py-10" style="color: var(--text-muted);">
+                    
+                    <div id="no-transactions" class="text-center py-10 hidden" style="color: var(--text-muted);">
                         <i class="fas fa-search-dollar text-4xl mb-4"></i>
                         <p>No transactions found.</p>
                         <p class="text-sm">Add one to get started!</p>
                     </div>
                 </section>
-                <section class=" mt-4 flex justify-end space-x-4">
-                    <button id="prev-page-btn" class="transition delay-150 duration-300 ease-in-out hover:-translate-y-1 p-1 rounded-lg"
-                    >previous</button>
-                     <button id="next-page-btn" class="transition delay-150 duration-300 ease-in-out hover:-translate-y-1 p-1 rounded-lg"
-                    >next</button>
+
+                <section class="mt-4 flex justify-end space-x-4">
+                    <button id="prev-page-btn">Previous</button>
+                    <button id="next-page-btn">Next</button>
                 </section>
             </div>
 
             <aside class="lg:col-span-1">
-                <section class="card p-6 sticky top-24">
-                    <h2 class="text-xl font-semibold mb-4">Spending by Category</h2>
-                    <div class="relative h-64 md:h-80">
-                        <canvas id="category-chart"></canvas>
+                <div class="sticky top-24">
+                    <section class="card p-6 ">
+                        <h2 class="text-xl font-semibold mb-4">Spending by Category</h2>
+                        <div class="relative h-64 md:h-80">
+                            <canvas id="category-chart"></canvas>
+                        </div>
+                        <div id="no-chart-data" class="text-center py-12 hidden" style="color: var(--text-muted);">
+                            <i class="fas fa-chart-pie text-4xl mb-4"></i>
+                            <p>No expense data to display.</p>
+                        </div>
+                    </section>
+                    
+                    <div class="flex flex-row gap-4 mt-6">
+                        <button id="pdf-download-btn" class="btn btn-export flex-1">
+                            <i class="ri-file-pdf-line"></i> <span>Export PDF</span>
+                        </button>
+                        <button id="excel-download-btn" class="btn btn-export flex-1">
+                            <i class="ri-file-excel-line"></i> <span>Export Excel</span>
+                        </button>
                     </div>
-                    <div id="no-chart-data" class="text-center py-12 hidden" style="color: var(--text-muted);">
-                        <i class="fas fa-chart-pie text-4xl mb-4"></i>
-                        <p>No expense data to display.</p>
-                    </div>
-                </section>
+                </div>
             </aside>
         </div>
     </main>
@@ -325,56 +373,44 @@
     <div id="fab-container" class="fab-container md:hidden">
         <div class="fab-options">
             <div class="relative">
-                <button id="add-income-fab" class="fab-option btn-income">
-                    <i class="fas fa-plus"></i>
-                </button>
+                <button id="add-income-fab" class="fab-option btn-income"><i class="fas fa-plus"></i></button>
                 <span class="tooltip">Income</span>
             </div>
             <div class="relative">
-                <button id="add-expense-fab" class="fab-option btn-expense">
-                    <i class="fas fa-minus"></i>
-                </button>
+                <button id="add-expense-fab" class="fab-option btn-expense"><i class="fas fa-minus"></i></button>
                 <span class="tooltip">Expense</span>
             </div>
         </div>
-        <button id="main-fab" class="fab">
-            <i class="fas fa-plus text-xl"></i>
-        </button>
+        <button id="main-fab" class="fab"><i class="fas fa-plus text-xl"></i></button>
     </div>
 
     <div id="add-income-modal" class="modal fixed inset-0 z-50 flex items-end justify-center hidden">
         <div class="modal-content w-full max-w-md p-6 rounded-t-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6">
                 <h3 id="income-modal-title" class="text-2xl font-bold">New Income</h3>
-                <button id="close-income-modal-btn" class="text-[var(--text-muted)] hover:text-[var(--text-color)]">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
+                <button id="close-income-modal-btn" class="text-[var(--text-muted)] hover:text-[var(--text-color)]"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <form id="add-income-form" class="space-y-4">
                 <input type="hidden" id="type" name="type" value="income">
                 <div>
-                    <label for="description" class="block text-sm font-medium mb-1">Description</label>
-                    <input type="text" id="income-comment" name="income-comment" required placeholder="e.g. profit from investment" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
+                    <label class="block text-sm font-medium mb-1">Description</label>
+                    <input type="text" id="income-comment" name="income-comment" required class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
                 </div>
                 <div>
-                    <label for="amount" class="block text-sm font-medium mb-1">Amount (₹)</label>
-                    <input type="number" id="income-amount" name="income-amount" required step="0.01" placeholder="0.00" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
+                    <label class="block text-sm font-medium mb-1">Amount (₹)</label>
+                    <input type="number" id="income-amount" name="income-amount" required step="0.01" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
                 </div>
                 <div>
-                    <label for="category" class="block text-sm font-medium mb-1">Category</label>
-                    <select id="income-category" name="income-category" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
-                        <option value="Salary">Salary</option>
-                        <option value="Business">Business</option>
-                        <option value="Investment">Investment</option>
-                        <option value="Gift">Gift</option>
-                        <option value="Other">Other</option>
+                    <label class="block text-sm font-medium mb-1">Category</label>
+                    <select id="income-category" name="income-category" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
+                        <option value="Salary">Salary</option><option value="Business">Business</option><option value="Investment">Investment</option><option value="Gift">Gift</option><option value="Other">Other</option>
                     </select>
                 </div>
                 <div>
-                    <label for="date" class="block text-sm font-medium mb-1">Date</label>
-                    <input type="text" id="income-date" name="income-date" required class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
+                    <label class="block text-sm font-medium mb-1">Date</label>
+                    <input type="text" id="income-date" name="income-date" required class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
                 </div>
-                <button type="submit" id="income-modal-submit-btn" class="btn btn-primary w-full py-4 text-lg">Add Transaction</button>
+                <button type="submit" id="income-modal-submit-btn" class="btn btn-primary w-full py-4 text-lg font-bold rounded-xl mt-4">Add Transaction</button>
             </form>
         </div>
     </div>
@@ -383,38 +419,29 @@
         <div class="modal-content w-full max-w-md p-6 rounded-t-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6">
                 <h3 id="expense-modal-title" class="text-2xl font-bold">New Expense</h3>
-                <button id="close-expense-modal-btn" class="text-[var(--text-muted)] hover:text-[var(--text-color)]">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
+                <button id="close-expense-modal-btn" class="text-[var(--text-muted)] hover:text-[var(--text-color)]"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <form id="add-expense-form" class="space-y-4">
                 <input type="hidden" id="type" name="type" value="expense">
                 <div>
-                    <label for="description" class="block text-sm font-medium mb-1">Description</label>
-                    <input type="text" id="expense-comment" name="expense-comment" required placeholder="e.g. Tea" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
+                    <label class="block text-sm font-medium mb-1">Description</label>
+                    <input type="text" id="expense-comment" name="expense-comment" required class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
                 </div>
                 <div>
-                    <label for="amount" class="block text-sm font-medium mb-1">Amount (₹)</label>
-                    <input type="number" id="expense-amount" name="expense-amount" required step="0.01" placeholder="0.00" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
+                    <label class="block text-sm font-medium mb-1">Amount (₹)</label>
+                    <input type="number" id="expense-amount" name="expense-amount" required step="0.01" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
                 </div>
                 <div>
-                    <label for="category" class="block text-sm font-medium mb-1">Category</label>
-                    <select id="expense-category" name="expense-category" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
-                        <option value="Food">Food</option>
-                        <option value="Transportation">Transportation</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Housing">Housing</option>
-                        <option value="Utilities">Utilities</option>
-                        <option value="Other">Other</option>
+                    <label class="block text-sm font-medium mb-1">Category</label>
+                    <select id="expense-category" name="expense-category" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
+                        <option value="Food">Food</option><option value="Transportation">Transportation</option><option value="Shopping">Shopping</option><option value="Entertainment">Entertainment</option><option value="Healthcare">Healthcare</option><option value="Housing">Housing</option><option value="Utilities">Utilities</option><option value="Other">Other</option>
                     </select>
                 </div>
                 <div>
-                    <label for="date" class="block text-sm font-medium mb-1">Date</label>
-                    <input type="text" id="expense-date" name="expense-date" required class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
+                    <label class="block text-sm font-medium mb-1">Date</label>
+                    <input type="text" id="expense-date" name="expense-date" required class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
                 </div>
-                <button type="submit" id="expense-modal-submit-btn" class="btn btn-primary w-full py-4 text-lg">Add Transaction</button>
+                <button type="submit" id="expense-modal-submit-btn" class="btn btn-primary w-full py-4 text-lg font-bold rounded-xl mt-4">Add Transaction</button>
             </form>
         </div>
     </div>
@@ -423,62 +450,63 @@
         <div class="modal-content w-full max-w-md p-6 rounded-t-3xl shadow-xl">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold">Filter Transactions</h3>
-                <button id="close-filter-modal-btn" class="text-[var(--text-muted)] hover:text-[var(--text-color)]">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
+                <button id="close-filter-modal-btn" class="text-[var(--text-muted)] hover:text-[var(--text-color)]"><i class="fas fa-times text-2xl"></i></button>
             </div>
-            
             <form id="filter-form" class="space-y-4">
                 <div>
                     <label for="filter-type" class="block text-sm font-medium mb-1">Type</label>
-                    <select id="filter-type" name="filter-type" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
-                        <option value="">All</option>
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
+                    <select id="filter-type" name="filter-type" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
+                        <option value="">All</option><option value="income">Income</option><option value="expense">Expense</option>
                     </select>
                 </div>
-                
                 <div>
                     <label for="filter-category" class="block text-sm font-medium mb-1">Category</label>
-                    <select id="filter-category" name="filter-category" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
+                    <select id="filter-category" name="filter-category" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
                         <option value="">All</option>
-                        <optgroup label="Expenses">
-                            <option value="Food">Food</option>
-                            <option value="Transportation">Transportation</option>
-                            <option value="Shopping">Shopping</option>
-                            <option value="Entertainment">Entertainment</option>
-                            <option value="Healthcare">Healthcare</option>
-                            <option value="Housing">Housing</option>
-                            <option value="Utilities">Utilities</option>
-                        </optgroup>
-                        <optgroup label="Income">
-                            <option value="Salary">Salary</option>
-                            <option value="Business">Business</option>
-                            <option value="Investment">Investment</option>
-                            <option value="Gift">Gift</option>
-                        </optgroup>
-                        <option value="Other">Other</option>
+                        <optgroup label="Expenses"><option value="Food">Food</option><option value="Transportation">Transportation</option><option value="Shopping">Shopping</option><option value="Entertainment">Entertainment</option><option value="Healthcare">Healthcare</option><option value="Housing">Housing</option><option value="Utilities">Utilities</option></optgroup>
+                        <optgroup label="Income"><option value="Salary">Salary</option><option value="Business">Business</option><option value="Investment">Investment</option><option value="Gift">Gift</option></optgroup>
                     </select>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="filter-start-date" class="block text-sm font-medium mb-1">Start Date</label>
-                        <input type="text" id="filter-start-date" name="filter-start-date" placeholder="From" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
-                    </div>
-                    <div>
-                        <label for="filter-end-date" class="block text-sm font-medium mb-1">End Date</label>
-                        <input type="text" id="filter-end-date" name="filter-end-date" placeholder="To" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); --tw-ring-color: var(--primary-color);">
-                    </div>
+                    <div><label class="block text-sm font-medium mb-1">Start Date</label><input type="text" id="filter-start-date" name="filter-start-date" placeholder="From" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);"></div>
+                    <div><label class="block text-sm font-medium mb-1">End Date</label><input type="text" id="filter-end-date" name="filter-end-date" placeholder="To" class="w-full rounded-lg p-3 text-sm focus:ring-2" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);"></div>
                 </div>
-                
                 <div class="flex space-x-4 pt-4">
-                    <button type="button" id="clear-filter-btn" class="btn btn-secondary w-1/2 py-3 text-base">Clear</button>
-                    <button type="submit" id="apply-filter-btn" class="btn btn-primary w-1/2 py-3 text-base">Apply Filters</button>
+                    <button type="button" id="clear-filter-btn" class="w-1/2 py-3 text-base rounded-lg border border-[var(--border-color)] text-[var(--text-color)]">Clear</button>
+                    <button type="submit" id="apply-filter-btn" class="w-1/2 py-3 text-base rounded-lg btn-primary font-bold">Apply</button>
                 </div>
             </form>
         </div>
     </div>
+
     <script src="Transaction.js"></script>
+    <script>
+        // Auth Guard
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/public/index.html';
+        }
+
+        // Logout logic
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/public/index.html';
+        }
+
+        // Theme Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.innerHTML = savedTheme === 'dark' ? '<i class="ri-sun-line"></i>' : '<i class="ri-moon-line"></i>';
+
+        themeToggle.addEventListener('click', () => {
+            const current = body.getAttribute('data-theme');
+            const newTheme = current === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.innerHTML = newTheme === 'dark' ? '<i class="ri-sun-line"></i>' : '<i class="ri-moon-line"></i>';
+        });
+    </script>
 </body>
 </html>

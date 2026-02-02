@@ -697,12 +697,9 @@ background: linear-gradient(135deg, var(--dark-primary), var(--dark-secondary));
             <span></span>
         </div>
         <ul class="nav-links">
-            <li><a href="/frontend\darkp.html">Home</a></li>
-            <li><a href="#"></a></li>
-            <li><a href="#"></a></li>
-            <li><button class="mode-toggle" id="modeToggle">
-                <i class="fas fa-moon"></i>
-            </button></li>
+            <li><a href="home.html">Home</a></li>
+            <!-- <li><a href="/frontend\dashboard.html">Dashboard</a></li> -->
+            
         </ul>
     </nav>
 
@@ -772,14 +769,6 @@ background: linear-gradient(135deg, var(--dark-primary), var(--dark-secondary));
                     
                     <button type="submit" class="submit-btn">Sign In</button>
                     
-                    <div class="social-login">
-                        <p>Or continue with</p>
-                        <div class="social-icons">
-                            <a href="#" class="social-icon google"><i class="fab fa-google"></i></a>
-                            <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="social-icon twitter"><i class="fab fa-twitter"></i></a>
-                        </div>
-                    </div>
                 </form>
                 
                 <form class="form" id="registerForm">
@@ -804,15 +793,7 @@ background: linear-gradient(135deg, var(--dark-primary), var(--dark-secondary));
                     </div>
                     
                     <button type="submit" class="submit-btn">Create Account</button>
-                    
-                    <div class="social-login">
-                        <p>Or sign up with</p>
-                        <div class="social-icons">
-                            <a href="#" class="social-icon google"><i class="fab fa-google"></i></a>
-                            <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="social-icon twitter"><i class="fab fa-twitter"></i></a>
-                        </div>
-                    </div>
+            
                 </form>
             </div>
         </div>
@@ -831,7 +812,8 @@ background: linear-gradient(135deg, var(--dark-primary), var(--dark-secondary));
                     email,  
                     password
                 }).then((res)=>{
-                    localStorage.setItem("token",res.data)
+                    localStorage.setItem("token",res.data.token)
+                    console.log(res.data.token);
                     console.log("login sucessful");
 
                     setTimeout(()=>{

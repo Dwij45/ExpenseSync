@@ -11,12 +11,9 @@
     
 </head>
 <body data-theme="light">
-    <nav class="navbar">
+    <nav class="navbar sticky top-0 z-40">
         <div class="navbar-container">
             <div class="logo">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
                 ExpenseSync
             </div>
             <div class="nav-links">
@@ -24,13 +21,13 @@
                 <a href="#how-it-works">How It Works</a>
                 <a href="#testimonials">Reviews</a>
                 <a href="#pricing">Pricing</a>
-                <a href="/frontend/dashboard.html">Dashboard</a>
+                <a href="/public/dashboard.html">Dashboard</a>
                 <button id="theme-toggle" class="theme-toggle">
                     <i class="ri-moon-line"></i>
                 </button>
             </div>
             <div class="nav-buttons">
-                <button class="btn btn-login">Login</button>
+                <button class="btn btn-login ">Login</button>
                 <button class="btn btn-signup">Sign Up</button>
             </div>
         </div>
@@ -41,7 +38,7 @@
             <h1>Track Your Finances <span class="highlight">Effortlessly</span></h1>
             <p>ExpenseSync helps you manage your money with AI-powered tracking, UPI integration, portfolio analytics, and voice-enabled expense recording to give you complete control of your financial life.</p>
             <div class="hero-buttons">
-                <button class="btn btn-primary" onclick="navtodashboard()">Get Started Free</button>
+                <button class="btn btn-primary started-btn" >Get Started Free</button>
                 <button class="btn btn-secondary">View Demo</button>
             </div>
         </div>
@@ -81,7 +78,7 @@
         <h2>Why Choose ExpenseSync?</h2>
         <p class="features-subtitle">Our platform combines the latest financial technology with an intuitive user interface to help you track, analyze, and optimize your spending habits.</p>
         <div class="features-grid">
-           
+            
             <div class="feature-card">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -102,11 +99,9 @@
                 </svg>
                 <h3>Smart Budgeting</h3>
                 <p>Set personalized budgets and receive alerts when you're close to exceeding them.</p>
-            </div>      
+            </div>          
         </div>
     </section>
-    
-    <!-- Continue from your last line -->
     
     <section class="how-it-works" id="how-it-works">
         <h2>How It Works</h2>
@@ -155,11 +150,10 @@
             <h3>Free</h3>
             <p class="price">₹0/month</p>
             <ul>
-                <li>UPI Sync</li>
                 <li>Manual Tracking</li>
                 <li>Basic Reports</li>
             </ul>
-            <button class="btn btn-secondary">Get Started</button>
+            <button class="btn btn-secondary started-btn">Get Started</button>
         </div>
         <div class="pricing-card featured">
             <h3>Pro</h3>
@@ -225,7 +219,7 @@
     </div>
 </footer>
 
-<script src="/public/script.js"></script>
+<!-- <script src="/public/script.js"></script> -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('expenseChart').getContext('2d');
@@ -257,7 +251,17 @@
         function navtodashboard() {
             window.location.href = "/frontend/history2.html"; // Adjust as needed
         }
-        
+        function navigating(){
+              if (!localStorage.getItem('token')){
+                window.location.href = "/public/authpage.html";
+                console.log("not logged in")
+              }
+              else{
+                window.location.href = "transaction.html";
+              }
+            }
+            document.querySelector('.started-btn').addEventListener('click', navigating);
+
         document.getElementById('theme-toggle').addEventListener('click', function () {
             const body = document.body;
             const currentTheme = body.getAttribute('data-theme');
@@ -266,6 +270,5 @@
             this.innerHTML = newTheme === 'dark' ? '<i class="ri-sun-line"></i>' : '<i class="ri-moon-line"></i>';
         });
         </script>
-        <!-- <script src="/finanace tracker/frontend/script.js"></script> -->
 </body>
 </html>

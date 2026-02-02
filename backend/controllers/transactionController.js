@@ -41,8 +41,10 @@ async function findByCategory(req, res) {
 async function deleteExpense(req, res) {
   try {
     const id = req.query.id;
+    const type=req.query.type
+    console.log("id and type is ", id,type)
     if (!id) return res.status(400).json({ message: 'Missing id query parameter' });
-    const deleted = await transactionService.deleteExpenseById(id);
+    const deleted = await deleteExpenseById(id,type);
     if (!deleted) return res.status(404).json({ message: 'Expense not found' });
     return res.status(200).json({ message: 'Expense deleted', deleted });
   } catch (err) {

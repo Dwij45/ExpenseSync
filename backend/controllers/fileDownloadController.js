@@ -1,4 +1,4 @@
-const { pdfGenerator, csvGenerator } = require('../services/fileDownloadService');
+const { pdfGenerator, csvGenerator, excelGenerator} = require('../services/fileDownloadService');
 
 async function downloadPdf(req, res) {
     try {
@@ -26,7 +26,20 @@ async function downloadCsv(req, res) {
     }
 }
 
+async function downloadExcel(req, res) {
+    try{
+        const userId = req.userId;
+        const streamExcel = await excelGenerator(userId);
+        streamExcel(res);
+        return;
+    }catch(err){
+        const status = err.status || 500;
+        return res.status(status).json({ message: err.message, details: err.details });
+
+    }
+}
 module.exports = {
     downloadPdf,
-    downloadCsv
+    downloadCsv,
+    downloadExcel
 };

@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addExpenseFab = document.getElementById('add-expense-fab');
     const mainFab = document.getElementById('main-fab');
     const fabContainer = document.getElementById('fab-container');
+    const pdfDownloadBtn = document.getElementById('pdf-download-btn');
+    const excelDownloadBtn = document.getElementById('excel-download-btn');
     
     // Pagination Buttons (Corrected IDs)
     const prevPageBtn = document.getElementById('next-page-btn');
@@ -82,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
      */
     async function fetchRecentData(page) {
         try {
-            const res = await fetch(`http://localhost:3000/dashboard/get-transactions?page=${page}&limit=${limit}`, {
+            const res = await fetch(`http://localhost:3000/transaction/get-transactions?page=${page}&limit=${limit}`, {
                 headers: { 'token': localStorage.getItem('token') }
             });
             if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
@@ -106,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
      */
     async function fetchFilteredData(page) {
         // Build the query URL
-        const url = new URL('http://localhost:3000/dashboard/filter');
+        const url = new URL('http://localhost:3000/transaction/filter');
         url.searchParams.append('page', page);
         url.searchParams.append('limit', limit);
 
@@ -154,17 +156,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- RENDER FUNCTIONS ---
-
+    // --- RENDER FUNCTIONS --
+    
     const renderTransactions = (transactionsToRender) => {
-        // ... (This function remains IDENTICAL to your previous version)
+        // ... (Keep existing sorting/formatting logic) ...
         const formatted = transactionsToRender.map(t => ({
             ...t,
             dateObj: new Date(t.date),
             formattedDate: new Date(t.date).toLocaleDateString('en-US', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
+                day: '2-digit', month: 'short', year: 'numeric'
             }),
         })).sort((a, b) => b.dateObj - a.dateObj);
 
@@ -200,6 +200,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const listItem = document.createElement('li');
                 listItem.className = `flex justify-between items-center py-3 border-b last:border-none`;
                 listItem.style.borderColor = 'var(--list-border-color)';
+                
+                // ADDED: data-id and data-type to the deletetrans span
+                // ADDED: cursor-pointer class
                 listItem.innerHTML = `
                     <div class="flex items-center space-x-4">
                         <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg ${iconBgClass} ${iconColorClass}">
@@ -210,20 +213,64 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <p class="text-xs text-[var(--text-muted)]">${t.category} • ${t.formattedDate}</p>
                         </div>
                     </div>
-                    <span class="font-semibold ${colorClass} text-sm md:text-base">${sign}${formatter.format(t.amount)}</span>
+                    <div class="flex items-center space-x-4">
+                        <span class="font-semibold ${colorClass} text-sm md:text-base">${sign}${formatter.format(t.amount)}</span>
+                        <span class="ml-1 deletetrans cursor-pointer hover:text-red-500 transition-colors" data-id="${t._id}" data-type="${t.type}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3 pointer-events-none" viewBox="0 0 16 16">
+                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+                            </svg>                  
+                        </span>
+                    </div>
                 `;
                 transactionListEl.appendChild(listItem);
             });
         });
     };
     
+    const deleteTransaction = async (id, type) => {
+    if(!confirm("Are you sure you want to delete this transaction?")) return;
+
+    try {
+        // --- NEW URL FORMAT ---
+        // http://localhost:3000/transaction/delete?id=...&type=...
+        const url = `http://localhost:3000/transaction/delete?id=${id}&type=${type}`;
+        
+        console.log("Attempting delete at:", url); // Check console to verify
+
+        const res = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'token': localStorage.getItem('token') }
+        });
+
+        // 1. Safety Check: If server returns HTML (error page), handle it gracefully
+        if (!res.ok) {
+            const textResponse = await res.text();
+            console.error("Server Error Response:", textResponse);
+            throw new Error(`Server responded with ${res.status}: ${res.statusText}`);
+        }
+
+        // 2. Parse JSON response
+        const data = await res.json();
+        
+        // 3. Success! Refresh UI
+        // alert(data.message || "Deleted successfully"); // Optional alert
+        
+        await fetchData(currentPage);    // Reload list
+        await updateSummary();           // Update header cards
+        await renderCategoryChart();     // Update pie chart
+
+    } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Failed to delete. Check console for details.");
+    }
+}
     /**
      * Fetches and updates the summary cards.
      * This is unaffected by client-side filters.
      */
     const updateSummary = async () => {
         try {
-            const res = await fetch('http://localhost:3000/dashboard/summary', {
+            const res = await fetch('http://localhost:3000/transaction/summary', {
                 headers: { 'token': localStorage.getItem('token') }
             });
             if (!res.ok) throw new Error('Failed to fetch summary');
@@ -246,7 +293,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ... (This function remains IDENTICAL to your previous version)
         let expenseData = {};
         try {
-            const res = await fetch('http://localhost:3000/dashboard/category-summary', {
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            console.log("The month and the date ",)
+            const res = await fetch('http://localhost:3000/transaction/category-summary', {
                 headers: { 'token': localStorage.getItem('token') }
             });
             if (!res.ok) throw new Error('Failed to fetch chart data');
@@ -327,7 +378,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const date = expenseFormData.get('expense-date');
 
         try {
-            const res = await fetch('http://localhost:3000/dashboard/expense', {
+            const res = await fetch('http://localhost:3000/transaction/expense', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'token': localStorage.getItem('token') },
                 body: JSON.stringify({ amount, category, comment: comment || category, date })
@@ -358,7 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const date = incomeFormData.get('income-date');
 
         try {
-            const res = await fetch('http://localhost:3000/dashboard/income', {
+            const res = await fetch('http://localhost:3000/transaction/income', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'token': localStorage.getItem('token') },
                 body: JSON.stringify({ amount, category, comment: comment || category, date })
@@ -431,6 +482,78 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    const downloadPdf = async ()=>{
+        try {
+             const response = await fetch('http://localhost:3000/download/pdf', {
+                    method: 'GET',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    'token': localStorage.getItem('token')
+                }
+            })
+            const blob = await response.blob();
+            const url=window.URL.createObjectURL(blob);
+            const a= document.createElement('a');
+            a.href=url;
+            a.download='expenses.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            // window.URL.revokeObjectURL(url);
+
+            if (!response.ok) throw new Error('Failed to download PDF');
+    }
+    catch (err) {
+        console.error(err);
+    }
+    }
+    
+    const downloadExcel = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/download/excel', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'token': localStorage.getItem('token')
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to download Excel file');
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'expenses.xlsx'; // .xlsx extension for Excel
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            // window.URL.revokeObjectURL(url); // Good practice to uncomment this eventually
+
+        } catch (err) {
+            console.error('Error downloading Excel:', err);
+            alert("Failed to download Excel file.");
+        }
+    }
+
+    // --- EVENT DELEGATION FOR DELETE ---
+    // We attach the listener to the parent list (transactionListEl)
+    // because the buttons inside are created dynamically.
+    transactionListEl.addEventListener('click', (e) => {
+        // Check if the clicked element is the delete button (or inside it)
+        const deleteBtn = e.target.closest('.deletetrans');
+        
+        if (deleteBtn) {
+            const id = deleteBtn.getAttribute('data-id');
+            const type = deleteBtn.getAttribute('data-type');
+            
+            if(id && type) {
+                deleteTransaction(id, type);
+            }
+        }
+    });
+
+
     // --- Theme ---
     const applyTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -443,8 +566,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     expenseForm.addEventListener('submit', handleExpenseForm);
     incomeForm.addEventListener('submit', handleIncomeForm);
     searchInput.addEventListener('input', handleSearch);
+    pdfDownloadBtn.addEventListener('click', downloadPdf);
     
     // Add/Expense Modal toggles
+    excelDownloadBtn.addEventListener('click', downloadExcel);
     addIncomeBtnHeader.addEventListener('click', openIncomeModal);
     addExpenseBtnHeader.addEventListener('click', openExpenseModal);
     addIncomeFab.addEventListener('click', openIncomeModal);

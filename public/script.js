@@ -1,6 +1,11 @@
 const themeToggle = document.querySelector('.theme-toggle');
 const body = document.body;
 
+const login=document.querySelector('.btn-login');
+const signup=document.querySelector('.btn-signup')
+const started = document.querySelector('.started-btn');
+
+
 themeToggle.addEventListener('click', () => {
   body.classList.toggle('dark-mode');
 });
@@ -143,30 +148,6 @@ borderColor: neonColors.map(c => c.replace('0.7', '1')),
 
 
 const spendingsCtx = document.getElementById('daily_spendings').getContext('2d');
-// new Chart(spendingsCtx, {
-//   type: 'bar',
-//   data: {
-//     labels: Object.keys(mockData.savingsGoals),
-//     datasets: [{
-//       label: 'Savings Goals ($)',
-//       // data: Object.values(mockData.savingsGoals),
-//       data: mockData.savingsGoals,
-//       backgroundColor: 'rgba(75, 192, 192, 0.7)',
-//       borderColor: 'rgba(75, 192, 192, 1)',
-//       borderWidth: 1
-//     }]
-//   },
-//   options: {
-//     indexAxis: 'y',
-//     responsive: true,
-//     scales: {
-//       x: {
-//         beginAtZero: true
-//       }
-//     }
-//   }
-// });
-
 
     const data = {
       labels: Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`),
@@ -398,8 +379,22 @@ new Chart(salatyCtx, {
                 }
             });
 
+            function navigating(){
+              if (!localStorage.getItem('token')){
+                window.location.href = "public/login.html";
+                console.log("not logged in")
+              }
+              else{
+                window.location.href = "transaction.html";
+              }
+            }
 
-
+            if(started){
+              started.addEventListener('click', ()=>{
+                console.log("started")
+                window.location.href = "login.html";
+              });
+            }
     // DARK THEME
 
     function applyChartTheme(isDark) {
