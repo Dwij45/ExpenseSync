@@ -827,24 +827,30 @@ background: linear-gradient(135deg, var(--dark-primary), var(--dark-secondary));
             // Register request to backend
             document.getElementById('registerForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const fullName = document.getElementById('fullName').value;
+                const name = document.getElementById('fullName').value;
                 const email = document.getElementById('regEmail').value;
                 const password = document.getElementById('regPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match');
+                    return;
+                }
 
                 try {
-                    const res = await axios.post('http://localhost:3000/user/signup', {
-                        fullName,
+                    await axios.post('http://localhost:3000/user/signup', {
+                        name,
                         email,
                         password
                     });
-                    localStorage.setItem("token", res.data);
                     console.log("Registration successful");
 
                     setTimeout(() => {
-                        window.location.href = 'public/home.html';
+                        window.location.href = 'home.html';
                     }, 1000);
                 } catch (err) {
-                    alert(err || 'Registration failed');
+                    const serverMessage = err?.response?.data?.message;
+                    alert(serverMessage || err.message || 'Registration failed');
                 }
             });
 
@@ -855,49 +861,55 @@ background: linear-gradient(135deg, var(--dark-primary), var(--dark-secondary));
         const registerForm = document.getElementById('registerForm');
         const formHeader = document.querySelector('.form-header');
         
-        loginBtn.addEventListener('click', () => {
-            loginBtn.classList.add('active');
-            registerBtn.classList.remove('active');
-            loginForm.classList.add('active');
-            registerForm.classList.remove('active');
-            formHeader.querySelector('h2').textContent = 'Welcome Back';
-            formHeader.querySelector('p').textContent = 'Sign in to continue to your account';
-        });
-        
-        registerBtn.addEventListener('click', () => {
-            registerBtn.classList.add('active');
-            loginBtn.classList.remove('active');
-            registerForm.classList.add('active');
-            loginForm.classList.remove('active');
-            formHeader.querySelector('h2').textContent = 'Create Account';
-            formHeader.querySelector('p').textContent = 'Sign up to get started with ExpenseFlow';
-        });
+        if (loginBtn && registerBtn && loginForm && registerForm && formHeader) {
+            loginBtn.addEventListener('click', () => {
+                loginBtn.classList.add('active');
+                registerBtn.classList.remove('active');
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+                formHeader.querySelector('h2').textContent = 'Welcome Back';
+                formHeader.querySelector('p').textContent = 'Sign in to continue to your account';
+            });
+            
+            registerBtn.addEventListener('click', () => {
+                registerBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+                registerForm.classList.add('active');
+                loginForm.classList.remove('active');
+                formHeader.querySelector('h2').textContent = 'Create Account';
+                formHeader.querySelector('p').textContent = 'Sign up to get started with ExpenseFlow';
+            });
+        }
         
         // Dark mode toggle
         const modeToggle = document.getElementById('modeToggle');
         const body = document.body;
         
-        modeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            
-            // Toggle icon
-            const icon = modeToggle.querySelector('i');
-            if (body.classList.contains('dark-mode')) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
+        if (modeToggle) {
+            modeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+                
+                // Toggle icon
+                const icon = modeToggle.querySelector('i');
+                if (body.classList.contains('dark-mode')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        }
         
         // Mobile menu toggle
         const menuToggle = document.querySelector('.menu-toggle');
         const navLinks = document.querySelector('.nav-links');
         
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('show');
-        });
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+        }
         
         // Form submission prevention (for demo)
         // document.querySelectorAll('form').forEach(form => {

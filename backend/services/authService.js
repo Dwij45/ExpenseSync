@@ -10,7 +10,7 @@ const config = {
 
 const signupSchema = z.object({
     email: z.string().min(3).max(100).email(),
-    password: z.string().min(6).regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[+$@#%&!]).+$/,"Password must contain uppercase, lowercase, number, and special symbol"),
+    password: z.string().min(6).regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[+$@#%&!]).+$/, "Password must contain uppercase, lowercase, number, and special symbol"),
     name: z.string().min(3).max(50)
 });
 
@@ -31,10 +31,10 @@ async function createUser({ email, password, name }) {
     }
 
     const hashed = await bcrypt.hash(password, config.saltRounds);
-    const created = await UserModel.create({ 
-        email, 
+    const created = await UserModel.create({
+        email,
         password: hashed,
-        name 
+        name
     });
 
 }

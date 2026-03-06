@@ -254,13 +254,16 @@
         function navigating(){
               if (!localStorage.getItem('token')){
                 window.location.href = "/public/authpage.html";
-                console.log("not logged in")
+                alert("not logged in")
               }
               else{
+                alert("you are logged in")
                 window.location.href = "transaction.html";
               }
             }
             document.querySelector('.started-btn').addEventListener('click', navigating);
+            document.querySelector('.btn-login').addEventListener('click', navigating);
+            document.querySelector('.btn-signup').addEventListener('click', navigating);
 
         document.getElementById('theme-toggle').addEventListener('click', function () {
             const body = document.body;
